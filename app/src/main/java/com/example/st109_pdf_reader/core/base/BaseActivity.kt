@@ -2,14 +2,19 @@ package com.example.st109_pdf_reader.core.base
 
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import androidx.annotation.Nullable
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewbinding.ViewBinding
+import com.example.st109_pdf_reader.core.dialog.GoToSettingsDialog
 import com.example.st109_pdf_reader.core.dialog.LoadingDialog
+import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.handleBackFromRight
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.utils.SystemUtils
+import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -34,6 +39,8 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
 
     lateinit var loadingDialog: LoadingDialog
 
+    lateinit var settingsDialog: GoToSettingsDialog
+
     override fun onCreate(@Nullable savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         SystemUtils.setLocale(this)
@@ -41,12 +48,17 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
         setContentView(binding.root)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         loadingDialog = LoadingDialog(this)
+        settingsDialog = GoToSettingsDialog(this)
+
         initView()
         viewListener()
         dataObservable()
         initText()
         initActionBar()
         initAds()
+
+
+
     }
 
     override fun onResume() {
@@ -54,7 +66,8 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
         hideNavigation(true)
     }
 
-    @SuppressLint("MissingSuperCall") override fun onBackPressed() {
+    @SuppressLint("MissingSuperCall")
+    override fun onBackPressed() {
         handleBackFromRight()
     }
 

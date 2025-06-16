@@ -1,56 +1,127 @@
 package com.example.st109_pdf_reader.ui.home.fragment
 
+import android.R.attr.type
+import android.content.res.ColorStateList
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
 import com.example.st109_pdf_reader.R
+import com.example.st109_pdf_reader.core.base.BaseFragment
+import com.example.st109_pdf_reader.core.utils.KeyApp
+import com.example.st109_pdf_reader.data.local.entity.FilesModel
+import com.example.st109_pdf_reader.data.model.HomeAllFileModel
+import com.example.st109_pdf_reader.databinding.FragmentReaderBinding
+import com.example.st109_pdf_reader.databinding.FragmentRecentBinding
+import com.example.st109_pdf_reader.ui.home.HomeActivity
+import com.example.st109_pdf_reader.ui.home.adapter.TypeFileAdapter
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class RecentFragment : BaseFragment<FragmentRecentBinding>() {
+    private val recentAdapter by lazy {
+        TypeFileAdapter(requireActivity())
+    }
+    private val typeList = ArrayList<HomeAllFileModel>()
+    private val recentList = ArrayList<FilesModel>()
+    private var type = KeyApp.ALL_FILE
+    override fun setViewBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ): FragmentRecentBinding {
+        return FragmentRecentBinding.inflate(inflater, container, false)
+    }
 
-/**
- * A simple [Fragment] subclass.
- * Use the [RecentFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class RecentFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    override fun initView() {
+        initRcv()
+    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    override fun viewListener() {
+        handleRcv()
+    }
+
+    private fun initRcv() {
+        binding.apply {
+            rcvTypeFile.adapter = recentAdapter
+            rcvTypeFile.itemAnimator = null
+
+
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_recent, container, false)
+    override fun dataObservable() {
+        super.dataObservable()
+        val homeActivity = (activity as HomeActivity)
+        lifecycleScope.launch {
+            homeActivity.fileViewModel.filesFlow.collectLatest {
+                submitAdapter(it.toCollection(ArrayList<FilesModel>()))
+            }
+        }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment RecentFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic fun newInstance(param1: String, param2: String) = RecentFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_PARAM1, param1)
-                putString(ARG_PARAM2, param2)
+    private fun submitAdapter(fileList: ArrayList<FilesModel>) {
+        typeList.clear()
+        typeList.addAll(handleConvertFile(fileList))
+        typeList[0].isSelected = true
+        recentAdapter.submitList(typeList)
+    }
+
+    private fun handleRcv() {
+        recentAdapter.onItemClick = { typeModel ->
+            handleSelectType(typeModel)
+        }
+    }
+
+    private fun handleSelectType(typeModel: HomeAllFileModel) {
+        val homeActivity = (activity as HomeActivity)
+        type = typeModel.type
+        when (type) {
+            KeyApp.ALL_FILE -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
+            }
+
+            KeyApp.WORD -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.word)
+            }
+
+            KeyApp.EXCEL -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.excel)
+            }
+
+            KeyApp.PPT -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.ppt)
+            }
+
+            KeyApp.PDF -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val homeActivity = (activity as HomeActivity)
+        when (type) {
+            KeyApp.ALL_FILE -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
+            }
+
+            KeyApp.WORD -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.word)
+            }
+
+            KeyApp.EXCEL -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.excel)
+            }
+
+            KeyApp.PPT -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.ppt)
+            }
+
+            KeyApp.PDF -> {
+                homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
             }
         }
     }

@@ -1,57 +1,349 @@
 package com.example.st109_pdf_reader.ui.home.fragment
 
+import android.content.res.ColorStateList
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.util.DisplayMetrics
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupWindow
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.example.st109_pdf_reader.R
+import com.example.st109_pdf_reader.core.base.BaseFragment
+import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
+import com.example.st109_pdf_reader.core.dialog.RenameDialog
+import com.example.st109_pdf_reader.core.extensions.dLog
+import com.example.st109_pdf_reader.core.extensions.dpToPx
+import com.example.st109_pdf_reader.core.extensions.gone
+import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
+import com.example.st109_pdf_reader.core.extensions.hideNavigation
+import com.example.st109_pdf_reader.core.extensions.renameFileByPath
+import com.example.st109_pdf_reader.core.extensions.select
+import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
+import com.example.st109_pdf_reader.core.extensions.shareFile
+import com.example.st109_pdf_reader.core.extensions.showToast
+import com.example.st109_pdf_reader.core.extensions.visible
+import com.example.st109_pdf_reader.core.utils.KeyApp
+import com.example.st109_pdf_reader.core.utils.SystemUtils
+import com.example.st109_pdf_reader.data.local.entity.FilesModel
+import com.example.st109_pdf_reader.data.model.HomeAllFileModel
+import com.example.st109_pdf_reader.databinding.FragmentBookmarkBinding
+import com.example.st109_pdf_reader.databinding.PopupReaderBinding
+import com.example.st109_pdf_reader.ui.home.HomeActivity
+import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
+import com.example.st109_pdf_reader.ui.home.adapter.TypeFileAdapter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import java.io.File
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [BookmarkFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class BookmarkFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    private val typeAdapter by lazy { TypeFileAdapter(requireActivity()) }
+    private val bookmarkAdapter by lazy { ReaderAdapter(requireActivity()) }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+    private val typeList = ArrayList<HomeAllFileModel>()
+    private val bookmarkList = ArrayList<FilesModel>()
+    private val getFileList = ArrayList<FilesModel>()
+
+    private var type = KeyApp.ALL_FILE
+
+    private val homeActivity: HomeActivity
+        get() = activity as HomeActivity
+
+    override fun setViewBinding(
+        inflater: LayoutInflater, container: ViewGroup?
+    ): FragmentBookmarkBinding {
+        return FragmentBookmarkBinding.inflate(inflater, container, false)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_bookmark, container, false)
+    override fun initView() {
+        initRcv()
+        convertToBookmark()
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BookmarkFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic fun newInstance(param1: String, param2: String) = BookmarkFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARG_PARAM1, param1)
-                putString(ARG_PARAM2, param2)
+    override fun viewListener() {
+        handleRcv()
+    }
+
+    override fun dataObservable() {
+        super.dataObservable()
+        lifecycleScope.launch {
+            homeActivity.fileViewModel.filesFlow.collectLatest {
+                val newList = ArrayList(it)
+                submitAdapter(newList)
             }
         }
+
+        homeActivity.fileList.observe(homeActivity) {
+            getFileList.clear()
+            getFileList.addAll(it)
+            convertToBookmark()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateHeaderBackground()
+        homeActivity.dLog("onResume")
+    }
+
+    private fun initRcv() {
+        binding.apply {
+            rcvTypeFile.apply {
+                adapter = typeAdapter
+                itemAnimator = null
+            }
+            rcvFile.apply {
+                adapter = bookmarkAdapter
+                itemAnimator = null
+            }
+        }
+    }
+
+    private fun handleRcv() {
+        typeAdapter.apply {
+            onItemClick = { typeModel ->
+                handleSelectType(typeModel)
+            }
+        }
+
+        bookmarkAdapter.apply {
+            onBookmarkClick = { file, position ->
+                handleBookmark(file, position)
+            }
+            onMoreClick = { file, position, view ->
+                handleMoreMyDesign(file, position, view)
+            }
+        }
+    }
+
+    private fun submitAdapter(fileList: ArrayList<FilesModel>) {
+        typeList.clear()
+        typeList.addAll(handleConvertFile(fileList, isBookmark = true))
+        val positionType = typeList.indexOfFirst{it.type == type}
+        typeList[positionType].isSelected = true
+        typeAdapter.submitList(typeList)
+    }
+
+    private fun handleSelectType(typeModel: HomeAllFileModel) {
+        type = typeModel.type
+        updateHeaderBackground()
+        homeActivity.fileViewModel.refreshScan(homeActivity)
+        convertToBookmark()
+    }
+
+    private fun updateHeaderBackground() {
+        val colorRes = when (type) {
+            KeyApp.WORD -> R.color.word
+            KeyApp.EXCEL -> R.color.excel
+            KeyApp.PPT -> R.color.ppt
+            KeyApp.PDF, KeyApp.ALL_FILE -> R.color.pdf
+            else -> R.color.pdf
+        }
+        homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(colorRes)
+    }
+
+    private fun convertToBookmark() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val temp = getFileList.filter {
+                it.isBookmark && (type == KeyApp.ALL_FILE || it.type == type)
+            }
+            bookmarkList.clear()
+            bookmarkList.addAll(temp)
+
+            launch(Dispatchers.Main) {
+                bookmarkAdapter.submitList(bookmarkList)
+                checkListSize()
+            }
+        }
+    }
+
+    private fun checkListSize() {
+        if (bookmarkList.isEmpty()) {
+            binding.layoutNoItem.visible()
+        } else {
+            binding.layoutNoItem.gone()
+        }
+    }
+
+    private fun handleBookmark(file: FilesModel, position: Int) {
+        (activity as HomeActivity).fileViewModel.updateBookmark(file.id, !file.isBookmark)
+        bookmarkList.removeAt(position)
+        getFileList.remove(file)
+        bookmarkAdapter.submitList(bookmarkList)
+    }
+
+    private fun handleMoreMyDesign(file: FilesModel, position: Int, view: View) {
+        val popupBinding = PopupReaderBinding.inflate(LayoutInflater.from(homeActivity))
+        val popupWindow = PopupWindow(
+            popupBinding.root,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+        popupWindow.elevation = 10f
+
+        when (type) {
+            KeyApp.WORD -> {
+                popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_word)
+                popupBinding.imvOpenFile.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvRename.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvShare.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvDelete.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+            }
+
+            KeyApp.EXCEL -> {
+                popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_excel)
+                popupBinding.imvOpenFile.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvRename.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvShare.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvDelete.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+            }
+
+            KeyApp.PPT -> {
+                popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_ppt)
+                popupBinding.imvOpenFile.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvRename.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvShare.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvDelete.imageTintList =
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+            }
+        }
+        popupBinding.tvOpenFile.select()
+        popupBinding.tvRename.select()
+        popupBinding.tvShare.select()
+        popupBinding.tvDelete.select()
+
+//        popupBinding.btnOpenFile.setOnSingleClick {
+//            handleDeleteItemPopup(path, popupWindow)
+//        }
+        popupBinding.btnRename.setOnSingleClick {
+            handleRename(file, position, popupWindow)
+        }
+        popupBinding.btnShare.setOnSingleClick {
+            popupWindow.dismiss()
+            (activity as HomeActivity).shareFile(file.path)
+        }
+        popupBinding.btnDelete.setOnSingleClick {
+            handleDelete(file.path, position, popupWindow)
+        }
+
+        val xOffset = homeActivity.dpToPx(-100)
+        val yOffset = homeActivity.dpToPx(6)
+
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        val viewY = location[1]
+        val displayMetrics = DisplayMetrics()
+        homeActivity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val screenHeight = displayMetrics.heightPixels
+        val distanceToBottom = screenHeight - viewY - view.height
+        if (distanceToBottom >= homeActivity.dpToPx(180)) {
+            popupWindow.showAsDropDown(view, xOffset, yOffset)
+        } else {
+            popupWindow.showAsDropDown(view, xOffset, homeActivity.dpToPx(-135))
+        }
+    }
+
+    private fun handleDelete(path: String, position: Int, popupWindow: PopupWindow) {
+        popupWindow.dismiss()
+        val confirmDialog = ConfirmDialog(
+            homeActivity, R.string.delete, R.string.do_you_want_to_delete_this_file
+        )
+        SystemUtils.setLocale(homeActivity)
+        confirmDialog.show()
+        confirmDialog.onNoClick = {
+            confirmDialog.dismiss()
+            homeActivity.hideNavigation()
+        }
+        confirmDialog.onYesClick = {
+            confirmDialog.dismiss()
+            val homeActivity = (activity as HomeActivity)
+            if (!File(path).exists()) {
+                homeActivity.showToast(getString(R.string.file_not_exist))
+            } else {
+                homeActivity.handleDeleteFile(
+                    homeActivity.loadingDialog,
+                    homeActivity.fileViewModel,
+                    path,
+                    onFinish = { status ->
+                        if (status) {
+                            bookmarkList.removeAt(position)
+                            bookmarkAdapter.submitList(bookmarkList)
+                        } else {
+                            homeActivity.showToast(getString(R.string.file_not_exist))
+                        }
+                        lifecycleScope.launch {
+                            (activity as HomeActivity).dismissLoading()
+                        }
+                    })
+            }
+
+        }
+    }
+
+    private fun handleRename(file: FilesModel, position: Int, popupWindow: PopupWindow) {
+        popupWindow.dismiss()
+        val homeActivity = (activity as HomeActivity)
+        val renameDialog = RenameDialog(homeActivity, file.name)
+        SystemUtils.setLocale(homeActivity)
+        renameDialog.show()
+        renameDialog.onNoClick = {
+            renameDialog.dismiss()
+            homeActivity.hideNavigation()
+        }
+        renameDialog.onYesClick = { newName ->
+            renameDialog.dismiss()
+            val extensionArray = file.path.split(".")
+            val extension = extensionArray[extensionArray.size - 1]
+            val newNameWithExtension = "${newName}.${extension}"
+            renameFileByPath(
+                homeActivity.loadingDialog,
+                homeActivity.fileViewModel,
+                file.path,
+                newNameWithExtension,
+                onFinish = { status ->
+                    if (status) {
+                        bookmarkList[position].name = newName
+                        bookmarkAdapter.notifyItemChanged(position)
+                    } else {
+                        homeActivity.showToast(getString(R.string.file_not_exist))
+                    }
+
+                    lifecycleScope.launch {
+                        homeActivity.dismissLoading()
+                    }
+                })
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        homeActivity.dLog("onStart")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        homeActivity.dLog("onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        homeActivity.dLog("onStop")
     }
 }

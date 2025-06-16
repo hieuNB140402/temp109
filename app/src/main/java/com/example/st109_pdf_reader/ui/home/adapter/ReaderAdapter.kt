@@ -39,28 +39,31 @@ class ReaderAdapter(val context: Context) : RecyclerView.Adapter<ReaderAdapter.R
 
     inner class ReaderVH(val binding: ItemReaderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(file: FilesModel, position: Int) {
-            when (file.type) {
+            // Image
+            val resourceImage = when (file.type) {
                 KeyApp.WORD -> {
-                    binding.imvType.setImageResource(R.drawable.ic_word_reader)
+                    R.drawable.ic_word_reader
                 }
 
                 KeyApp.EXCEL -> {
-                    binding.imvType.setImageResource(R.drawable.ic_excel_reader)
+                    R.drawable.ic_excel_reader
                 }
 
                 KeyApp.PPT -> {
-                    binding.imvType.setImageResource(R.drawable.ic_ppt_reader)
+                    R.drawable.ic_ppt_reader
                 }
 
-                KeyApp.PDF -> {
-                    binding.imvType.setImageResource(R.drawable.ic_pdf_reader)
+                else -> {
+                    R.drawable.ic_pdf_reader
                 }
             }
+            binding.imvType.setImageResource(resourceImage)
+            // Name + Description
             val size = formatFileSize(file.sizeInBytes.toLong())
             val fullInformation = "${file.date} | ${file.time} | $size"
             binding.tvName.text = file.name
             binding.tvInformationOther.text = fullInformation
-
+            // Show Long Click
             if (file.isShow) {
                 binding.btnSelect.visible()
                 binding.btnBookmark.gone()
@@ -71,21 +74,23 @@ class ReaderAdapter(val context: Context) : RecyclerView.Adapter<ReaderAdapter.R
                 binding.btnBookmark.visible()
                 binding.btnMore.visible()
             }
-
-            if (file.isSelected) {
-                binding.btnSelect.setImageResource(R.drawable.ic_selected)
+            // Select
+            val resourceSelect = if (file.isSelected) {
+                R.drawable.ic_selected
             }
             else {
-                binding.btnSelect.setImageResource(R.drawable.ic_not_select)
+                R.drawable.ic_not_select
             }
-
-            if (file.isBookmark) {
-                binding.btnBookmark.setImageResource(R.drawable.ic_bookmark_selected_view)
+            binding.btnSelect.setImageResource(resourceSelect)
+            //  Bookmark
+            val resourceBookmark = if (file.isBookmark) {
+               R.drawable.ic_bookmark_selected_view
             }
             else {
-                binding.btnBookmark.setImageResource(R.drawable.ic_not_bookmark)
+                R.drawable.ic_not_bookmark
             }
-
+            binding.btnBookmark.setImageResource(resourceBookmark)
+            // Event
             binding.btnBookmark.setOnSingleClick { onBookmarkClick?.invoke(file, position) }
 
             if (!file.isShow) {
@@ -105,7 +110,8 @@ class ReaderAdapter(val context: Context) : RecyclerView.Adapter<ReaderAdapter.R
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged") fun submitList(list: ArrayList<FilesModel>) {
+    @SuppressLint("NotifyDataSetChanged")
+    fun submitList(list: ArrayList<FilesModel>) {
         fileList.clear()
         fileList.addAll(list)
         notifyDataSetChanged()

@@ -23,7 +23,6 @@ interface FileDao {
     @Query("DELETE FROM file WHERE path = :path")
     suspend fun deleteFilesByPath(path: String)
 
-
     @Query("SELECT * FROM file")
     suspend fun getAllFiles(): List<FilesModel>
 
@@ -35,5 +34,9 @@ interface FileDao {
 
     @Query("UPDATE file SET name = :newName WHERE path = :path")
     suspend fun updateNameByPath(path: String, newName: String)
+
+    @Query("SELECT * FROM file WHERE type = :type AND isBookmark = 1")
+    fun getFileBookmarkByType(type: String): Flow<List<FilesModel>>
+
 
 }

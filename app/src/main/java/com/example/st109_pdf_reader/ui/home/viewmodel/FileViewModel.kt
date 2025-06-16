@@ -1,5 +1,6 @@
 package com.example.st109_pdf_reader.ui.home.viewmodel
 
+import android.R.attr.type
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -17,7 +18,8 @@ import kotlinx.coroutines.withContext
 import kotlin.collections.map
 
 class FileViewModel(private val repository: FileRepository) : ViewModel() {
-    val filesFlow: StateFlow<List<FilesModel>> = repository.getAllFilesFlow().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    val filesFlow: StateFlow<List<FilesModel>> =
+        repository.getAllFilesFlow().stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
     val getFilesFlow: StateFlow<List<FilesModel>> = filesFlow
 
     private val _isInitialized = MutableStateFlow(false)
@@ -67,12 +69,18 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
         _isInitialized.value = true
     }
 
-    private fun mergeScannedWithRoom(scanned: List<FilesModel>, roomList: List<FilesModel>): List<FilesModel> {
+    private fun mergeScannedWithRoom(
+        scanned: List<FilesModel>,
+        roomList: List<FilesModel>
+    ): List<FilesModel> {
         val roomMap = roomList.associateBy { it.path }
         return scanned.map { scannedFile ->
             roomMap[scannedFile.path]?.let { roomFile ->
                 scannedFile.copy(
-                    id = roomFile.id, isBookmark = roomFile.isBookmark, isRecentFiles = roomFile.isRecentFiles)
+                    id = roomFile.id,
+                    isBookmark = roomFile.isBookmark,
+                    isRecentFiles = roomFile.isRecentFiles
+                )
             } ?: scannedFile
         }
     }
@@ -106,4 +114,8 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
             }
         }
     }
+
+    fun getFileBookmarkByType(type: String): StateFlow<List<FilesModel>> =
+        repository.getFileBookmarkByType(type)
+            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 }

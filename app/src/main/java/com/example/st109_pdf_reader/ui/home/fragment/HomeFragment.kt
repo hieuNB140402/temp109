@@ -83,25 +83,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         val homeActivity = (activity as HomeActivity)
         lifecycleScope.launch {
             homeActivity.fileViewModel.filesFlow.collectLatest {
-                handleConvertFile(it.toCollection(ArrayList<FilesModel>()))
+                submitAdapter(it.toCollection(ArrayList<FilesModel>()))
             }
         }
 
     }
 
-    private fun handleConvertFile(fileList: ArrayList<FilesModel>) {
-        val typeList = arrayListOf(ALL_FILE, WORD, EXCEL, PPT, PDF)
+    private fun submitAdapter(fileList: ArrayList<FilesModel>){
         allFileList.clear()
-        typeList.forEach { type ->
-            var countFile = 0
-            fileList.forEach { file ->
-                if (file.type == type) {
-                    countFile++
-                }
-            }
-            allFileList.add(HomeAllFileModel(type, countFile))
-        }
-        allFileList[0].quantity = allFileList[1].quantity + allFileList[2].quantity + allFileList[3].quantity + allFileList[4].quantity
+        allFileList.addAll(handleConvertFile(fileList))
         homeAllFileAdapter.submitList(allFileList)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as HomeActivity).binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
     }
 }

@@ -66,7 +66,6 @@ class HomeAllFileAdapter(val context: Context) : RecyclerView.Adapter<HomeAllFil
     @SuppressLint("NotifyDataSetChanged") fun submitList(list: ArrayList<HomeAllFileModel>) {
         allFileList.clear()
         allFileList.addAll(list)
-        Log.d("nbhieu", "size: ${allFileList.size}")
         notifyDataSetChanged()
     }
 }

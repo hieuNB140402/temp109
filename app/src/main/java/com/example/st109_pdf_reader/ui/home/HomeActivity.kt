@@ -2,12 +2,15 @@ package com.example.st109_pdf_reader.ui.home
 
 import android.R.attr.data
 import android.annotation.SuppressLint
+import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
@@ -15,6 +18,7 @@ import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
 import com.example.st109_pdf_reader.core.dialog.RateDialog
 import com.example.st109_pdf_reader.core.extensions.animateLift
+import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
@@ -31,7 +35,9 @@ import com.example.st109_pdf_reader.core.utils.KeyApp.KeyIntent.INTENT_KEY
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.core.utils.SystemUtils.policy
 import com.example.st109_pdf_reader.core.utils.SystemUtils.shareApp
+import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
 import com.example.st109_pdf_reader.data.local.AppDatabase
+import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.local.repository.FileRepository
 import com.example.st109_pdf_reader.databinding.ActivityHomeBinding
 import com.example.st109_pdf_reader.ui.home.adapter.HomeAdapter
@@ -49,6 +55,8 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
     private var textGradientBottomList = ArrayList<TextView>()
     private var currentFragment = KeyApp.ValueApp.HOME
     lateinit var fileViewModel: FileViewModel
+    private var isLoadFileSuccess = false
+    var fileList = MutableLiveData<ArrayList<FilesModel>>()
 
     override fun setViewBinding(): ActivityHomeBinding {
         return ActivityHomeBinding.inflate(LayoutInflater.from(this))
@@ -58,13 +66,31 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         initList()
         initRate()
         countAccess()
-        setupViewPager()
-        val dao = AppDatabase.getInstance(this).fileDao()
-        val repository = FileRepository(dao)
+        checkPermissionToInit()
+    }
 
-        fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
-        fileViewModel.scanIfFirstTime(this)
+    private fun checkPermissionToInit() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+            if (!settingsDialog.isShowing) {
+                settingsDialog.show()
+            }
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(
+                storagePermission
+            )
+        ) {
+            if (!settingsDialog.isShowing) {
+                settingsDialog.show()
+            }
+        } else {
+            setupViewPager()
+            val dao = AppDatabase.getInstance(this).fileDao()
+            val repository = FileRepository(dao)
 
+            fileViewModel =
+                ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
+            fileViewModel.scanIfFirstTime(this)
+            isLoadFileSuccess = true
+        }
     }
 
     override fun viewListener() {
@@ -73,7 +99,11 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
                 btnActionBarLeft.setOnSingleClick { handleSettings() }
             }
             layoutSettings.setOnSingleClick { slideOutToLeft(layoutSettingsShow, layoutSettings) }
-            btnLang.setOnSingleClick { startIntentFromLeft(LanguageActivity::class.java, INTENT_KEY) }
+            btnLang.setOnSingleClick {
+                startIntentFromLeft(
+                    LanguageActivity::class.java, INTENT_KEY
+                )
+            }
             btnShare.setOnSingleClick(1500) { shareApp() }
             btnRate.setOnSingleClick { rateApp() }
             btnPolicy.setOnSingleClick(1500) { policy() }
@@ -104,8 +134,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
     private fun initRate() {
         if (SystemUtils.getIsRate(this)) {
             binding.btnRate.gone()
-        }
-        else {
+        } else {
             binding.btnRate.visible()
         }
     }
@@ -120,13 +149,17 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
     private fun initList() {
         binding.apply {
             bottomList = arrayListOf(
-                btnHome, btnRecent, btnBookmark, btnSaved)
+                btnHome, btnRecent, btnBookmark, btnSaved
+            )
             imageBottomList = arrayListOf(
-                imvHome, imvRecent, imvBookmark, imvSaved)
+                imvHome, imvRecent, imvBookmark, imvSaved
+            )
             textBottomList = arrayListOf(
-                tvHome, tvRecent, tvBookmark, tvSaved)
+                tvHome, tvRecent, tvBookmark, tvSaved
+            )
             textGradientBottomList = arrayListOf(
-                tvHomeGradient, tvRecentGradient, tvBookmarkGradient, tvSavedGradient)
+                tvHomeGradient, tvRecentGradient, tvBookmarkGradient, tvSavedGradient
+            )
 
             textGradientBottomList.forEach { text ->
                 setGradientTextHeightColor(text, "#F52C2C", "#B10C0C")
@@ -172,8 +205,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
                 imageBottomList[i].setImageResource(DataLocal.imageBottomSelectedList[i])
                 textBottomList[i].gone()
                 textGradientBottomList[i].visible()
-            }
-            else {
+            } else {
                 imageBottomList[i].setImageResource(DataLocal.imageBottomNotSelectedList[i])
                 textBottomList[i].visible()
                 textGradientBottomList[i].gone()
@@ -217,7 +249,8 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         }
     }
 
-    @SuppressLint("MissingSuperCall") override fun onBackPressed() {
+    @SuppressLint("MissingSuperCall")
+    override fun onBackPressed() {
         if (!SystemUtils.getIsRate(this) && SystemUtils.getCountBack(this) % 2 == 0) {
             val dialogRate = RateDialog(this)
             SystemUtils.setLocale(this)
@@ -225,7 +258,8 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             dialogRate.apply {
                 onRateLess3 = {
                     SystemUtils.setIsRate(this@HomeActivity, true)
-                    Toast.makeText(this@HomeActivity, R.string.have_rated, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@HomeActivity, R.string.have_rated, Toast.LENGTH_SHORT)
+                        .show()
                     val handler = Handler()
                     handler.postDelayed({
                         dialogRate.dismiss()
@@ -242,9 +276,24 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
                     exitProcess(0)
                 }
             }
-        }
-        else {
+        } else {
             exitProcess(0)
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        if (!isLoadFileSuccess) {
+            checkPermissionToInit()
+        }
+    }
+
+    override fun dataObservable() {
+        super.dataObservable()
+        lifecycleScope.launch {
+            fileViewModel.filesFlow.collectLatest {
+                fileList.postValue(it.toCollection(ArrayList<FilesModel>()))
+            }
         }
     }
 }

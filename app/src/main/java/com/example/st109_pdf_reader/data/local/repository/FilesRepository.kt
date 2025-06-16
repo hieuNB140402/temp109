@@ -1,6 +1,7 @@
 package com.example.st109_pdf_reader.data.local.repository
 
 import android.R.attr.name
+import android.R.attr.type
 import android.content.Context
 import android.provider.MediaStore
 import com.example.st109_pdf_reader.data.local.dao.FileDao
@@ -13,6 +14,7 @@ import java.util.Locale
 
 class FileRepository(private val fileDao: FileDao) {
     suspend fun insertFiles(files: List<FilesModel>) = fileDao.insertFiles(files)
+
     suspend fun getAllFiles(): List<FilesModel> = fileDao.getAllFiles()
 
     suspend fun updateBookmark(fileId: Int, isBookmark: Boolean) {
@@ -65,5 +67,9 @@ class FileRepository(private val fileDao: FileDao) {
             }
         }
         return list
+    }
+
+    fun getFileBookmarkByType(type: String) : Flow<List<FilesModel>> {
+        return fileDao.getFileBookmarkByType(type)
     }
 }
