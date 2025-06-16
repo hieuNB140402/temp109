@@ -1,0 +1,92 @@
+plugins {
+    id "com.android.library"
+}
+
+android {
+    namespace 'com.document.allreader.allofficefilereader'
+    compileSdkVersion 34
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 34
+        versionCode 1
+        versionName "1.0"
+
+        multiDexEnabled true
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+//    mavenCentral()
+//    maven { url "https://repository.aspose.com/repo/" }
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    implementation 'com.intuit.sdp:sdp-android:1.0.6'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    def lifecycle_version = "2.0.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime:$lifecycle_version"
+    annotationProcessor "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+
+    //pdf_creator_dependecy
+
+    implementation 'androidx.vectordrawable:vectordrawable-animated:1.1.0'
+    implementation 'androidx.exifinterface:exifinterface:1.3.2'
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.preference:preference:1.1.1'
+
+    // persistence room library - for db operations
+    implementation 'androidx.room:room-runtime:2.3.0'
+    annotationProcessor 'androidx.room:room-compiler:2.3.0'
+
+    // material ripple, morphing button, material dialog, animations
+    implementation 'com.balysv:material-ripple:1.0.2'
+//    implementation 'com.github.dmytrodanylyk:android-morphing-button:98a4986e56'
+//    implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    implementation 'com.airbnb.android:lottie:2.5.5'
+
+    // Itext pdf library
+//    implementation 'com.itextpdf:itextg:5.5.10'
+    implementation 'com.madgag.spongycastle:core:1.58.0.0'
+
+    // Picasso, image editor, image cropper
+    implementation 'com.squareup.picasso:picasso:2.5.2'
+
+    // Viewpager transformation
+    implementation 'com.eftimoff:android-viewpager-transformers:1.0.1@aar'
+
+    // Zxing - for scanning qr code
+    implementation 'com.google.zxing:core:3.3.3'
+
+    testImplementation 'org.mockito:mockito-core:2.23.4'
+    testImplementation 'org.robolectric:robolectric:4.3.1'
+
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}

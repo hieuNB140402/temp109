@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.PermissionActivity">
+    <!-- layoutActionBar -->
+    <FrameLayout
+        android:id="@+id/layoutActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/actionBar"
+            layout="@layout/layout_actionbar" />
+    </FrameLayout>
+
+    <!-- imgPermission -->
+    <ImageView
+        android:id="@+id/imgPermission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="72dp"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:src="@drawable/img_permission"
+        app:layout_constraintTop_toBottomOf="@+id/layoutActionBar" />
+
+    <!-- txtPermission -->
+    <LinearLayout
+        android:id="@+id/txtPermission"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imgPermission">
+
+        <TextView
+            android:id="@+id/txtPer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="14sp" />
+    </LinearLayout>
+
+    <!-- scvButton -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@+id/tvContinue"
+        app:layout_constraintTop_toBottomOf="@id/txtPermission">
+
+        <LinearLayout
+            android:id="@+id/layoutPermission"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:orientation="vertical">
+
+            <!-- btnStorage-->
+            <RelativeLayout
+                android:id="@+id/btnStorage"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_8_stroke_gray_solid_white">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:gravity="start"
+                    android:text="@string/storage"
+                    android:textColor="#2D2D2D"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/switchStoragePermission"
+                    android:layout_width="56dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_sw_off" />
+            </RelativeLayout>
+
+            <!-- btnNotification -->
+            <RelativeLayout
+                android:id="@+id/btnNotification"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="22dp"
+                android:background="@drawable/bg_8_stroke_gray_solid_white">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="16dp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:gravity="start"
+                    android:text="@string/notification"
+                    android:textColor="#2D2D2D"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:id="@+id/switchNotificationPermission"
+                    android:layout_width="56dp"
+                    android:layout_height="32dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="16dp"
+                    android:src="@drawable/ic_sw_off" />
+            </RelativeLayout>
+        </LinearLayout>
+
+    </ScrollView>
+
+    <!-- tvContinue -->
+    <TextView
+        android:id="@+id/tvContinue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="160dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:fontFamily="@font/roboto_medium"
+        android:padding="10dp"
+        android:text="@string/continue_per"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,105 @@
+-- Merging decision tree log ---
+manifest
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:2:1-148:12
+INJECTED from D:\App\ST109\office\src\main\AndroidManifest.xml:2:1-148:12
+	package
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:4:5-57
+		INJECTED from D:\App\ST109\office\src\main\AndroidManifest.xml
+	xmlns:tools
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:3:5-51
+	xmlns:android
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:2:11-69
+application
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:6:5-146:19
+	android:requestLegacyExternalStorage
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:11:9-52
+	android:supportsRtl
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:12:9-35
+	android:appComponentFactory
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:8:9-77
+	android:hardwareAccelerated
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:9:9-43
+	android:largeHeap
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:10:9-33
+	android:allowBackup
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:7:9-35
+	android:usesCleartextTraffic
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:13:9-44
+meta-data#android.webkit.WebView.MetricsOptOut
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:54:9-56:36
+	android:value
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:56:13-33
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:55:13-64
+meta-data#android.webkit.WebView.EnableSafeBrowsing
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:57:9-59:37
+	android:value
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:59:13-34
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:58:13-69
+receiver#com.document.allreader.allofficefilereader.utils.Receiver
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:71:9-94
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:71:19-91
+activity#com.google.android.play.core.missingsplits.PlayCoreMissingSplitsActivity
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:73:9-79:45
+	android:process
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:78:13-64
+	android:enabled
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:75:13-36
+	android:stateNotNeeded
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:79:13-42
+	android:launchMode
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:77:13-48
+	android:exported
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:76:13-37
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:74:13-100
+activity#com.google.android.play.core.common.PlayCoreDialogWrapperActivity
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:80:9-84:65
+	android:stateNotNeeded
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:83:13-42
+	android:exported
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:82:13-37
+	android:theme
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:84:13-62
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:81:13-93
+service#com.google.android.play.core.assetpacks.AssetPackExtractionService
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:86:9-93:19
+	android:enabled
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:88:13-36
+	android:exported
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:89:13-36
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:87:13-94
+meta-data#com.google.android.play.core.assetpacks.versionCode
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:90:13-92:41
+	android:value
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:92:17-38
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:91:17-83
+service#com.google.android.play.core.assetpacks.ExtractionForegroundService
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:94:9-97:40
+	android:enabled
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:96:13-36
+	android:exported
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:97:13-37
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:95:13-95
+activity#com.theartofdev.edmodo.cropper.CropImageActivity
+ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:102:9-105:59
+	android:screenOrientation
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:104:13-49
+	android:theme
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:105:13-56
+	android:name
+		ADDED from D:\App\ST109\office\src\main\AndroidManifest.xml:103:13-76
+uses-sdk
+INJECTED from D:\App\ST109\office\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from D:\App\ST109\office\src\main\AndroidManifest.xml
+INJECTED from D:\App\ST109\office\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from D:\App\ST109\office\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from D:\App\ST109\office\src\main\AndroidManifest.xml

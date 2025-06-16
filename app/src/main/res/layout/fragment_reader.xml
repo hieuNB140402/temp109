@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.home.fragment.ReaderFragment">
+
+    <!-- layoutActionBar -->
+    <FrameLayout
+        android:id="@+id/layoutActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/actionBar"
+            layout="@layout/layout_actionbar" />
+    </FrameLayout>
+
+    <!-- rcvFile -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcvFile"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBottom"
+        app:layout_constraintTop_toBottomOf="@id/layoutActionBar"
+        tools:listitem="@layout/item_reader" />
+
+    <!-- layoutBottom -->
+    <LinearLayout
+        android:id="@+id/layoutBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="15dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- btnDelete -->
+        <LinearLayout
+            android:id="@+id/btnDelete"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_8_gradient_ver"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_margin="8dp"
+                android:src="@drawable/ic_delete_view" />
+
+            <TextView
+                style="@style/single_marquee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:fontFamily="@font/roboto_medium"
+                android:text="@string/delete"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+        <!-- btnShare -->
+        <LinearLayout
+            android:id="@+id/btnShare"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_8_gradient_ver"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_margin="8dp"
+                android:src="@drawable/ic_share_view" />
+
+            <TextView
+                style="@style/single_marquee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:fontFamily="@font/roboto_medium"
+                android:text="@string/share"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- layoutNoItem -->
+    <LinearLayout
+        android:id="@+id/layoutNoItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutActionBar">
+
+        <ImageView
+            android:id="@+id/imgImage"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/img_no_item" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/roboto_medium"
+            android:gravity="center"
+            android:text="@string/no_result_found"
+            android:textColor="@color/black_2D"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- layoutSort -->
+    <FrameLayout
+        android:id="@+id/layoutSort"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/layoutParentSort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="95dp"
+            android:layout_marginEnd="11dp"
+            android:background="@drawable/bg_10_ppt"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="13dp">
+
+            <!-- btnSortAtoZ -->
+            <LinearLayout
+                android:id="@+id/btnSortAtoZ"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="11dp"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imvTickAtoZ"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_tick" />
+
+                <TextView
+                    style="@style/single_marquee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginHorizontal="16dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:gravity="center_vertical|start"
+                    android:text="@string/sort_by_name_a_z"
+                    android:textColor="@color/black_2D"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <!-- btnSortZtoA -->
+            <LinearLayout
+                android:id="@+id/btnSortZtoA"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="11dp"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imvTickZtoA"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_not_tick" />
+
+                <TextView
+                    style="@style/single_marquee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginHorizontal="16dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:gravity="center_vertical|start"
+                    android:text="@string/sort_by_name_z_a"
+                    android:textColor="@color/black_2D"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <!-- btnSortOldToNew -->
+            <LinearLayout
+                android:id="@+id/btnOldToNew"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="11dp"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imvTickOldToNew"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_not_tick" />
+
+                <TextView
+                    style="@style/single_marquee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginHorizontal="16dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:gravity="center_vertical|start"
+                    android:text="@string/sort_by_date_old_new"
+                    android:textColor="@color/black_2D"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <!-- btnSortNewToOld -->
+            <LinearLayout
+                android:id="@+id/btnNewToOld"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="11dp"
+                android:gravity="start"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/imvTickNewToOld"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_not_tick" />
+
+                <TextView
+                    style="@style/single_marquee"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginHorizontal="16dp"
+                    android:fontFamily="@font/roboto_regular"
+                    android:gravity="center_vertical|start"
+                    android:text="@string/sort_by_date_new_old"
+                    android:textColor="@color/black_2D"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
