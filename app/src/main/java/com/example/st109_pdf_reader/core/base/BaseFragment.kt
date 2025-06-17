@@ -42,12 +42,22 @@ abstract class BaseFragment<T : ViewBinding> : Fragment() {
         dataObservable()
     }
 
-    fun handleConvertFile(fileList: ArrayList<FilesModel>, isCurrent: Boolean = false, isBookmark: Boolean = false, isSaved: Boolean = false): ArrayList<HomeAllFileModel> {
+    fun handleConvertFile(fileList: ArrayList<FilesModel>, isRecent: Boolean = false, isBookmark: Boolean = false, isSaved: Boolean = false): ArrayList<HomeAllFileModel> {
         val typeList = arrayListOf(ALL_FILE, WORD, EXCEL, PPT, PDF)
         val allFileList = ArrayList<HomeAllFileModel>()
         allFileList.clear()
         when{
-            isCurrent ->{}
+            isRecent ->{
+                typeList.forEach { type ->
+                    var countFile = 0
+                    fileList.forEach { file ->
+                        if (file.type == type && file.isRecentFiles) {
+                            countFile++
+                        }
+                    }
+                    allFileList.add(HomeAllFileModel(type, countFile))
+                }
+            }
             isBookmark -> {
                 typeList.forEach { type ->
                     var countFile = 0

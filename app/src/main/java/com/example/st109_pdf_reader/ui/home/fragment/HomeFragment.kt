@@ -29,6 +29,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         HomeAllFileAdapter(requireActivity())
     }
     private val allFileList = ArrayList<HomeAllFileModel>()
+
+    private val homeActivity: HomeActivity
+        get() = activity as HomeActivity
+
     override fun setViewBinding(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
     }
@@ -42,7 +46,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     override fun viewListener() {
         binding.swrTypeHome.setOnRefreshListener {
-            (activity as HomeActivity).fileViewModel.refreshScan(requireActivity())
+            homeActivity.fileViewModel.refreshScan(requireActivity())
             binding.swrTypeHome.isRefreshing = false
         }
         handleRcv()
@@ -69,18 +73,19 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 putString(KeyApp.KeyIntent.INTENT_KEY, type)
             }
         }
-        startFragmentSlideInFromRight((activity as HomeActivity).binding.containerFragment)
+        startFragmentSlideInFromRight(homeActivity.binding.containerFragment)
 
         fragment.let {
-            requireActivity().supportFragmentManager.beginTransaction().replace((activity as HomeActivity).binding.containerFragment.id, fragment)
+            requireActivity().supportFragmentManager.beginTransaction().replace(homeActivity.binding.containerFragment.id, fragment)
                 .addToBackStack(null).commit()
         }
 
+        homeActivity.isFragmentOther = true
     }
 
     override fun dataObservable() {
         super.dataObservable()
-        val homeActivity = (activity as HomeActivity)
+        val homeActivity = homeActivity
         lifecycleScope.launch {
             homeActivity.fileViewModel.filesFlow.collectLatest {
                 submitAdapter(it.toCollection(ArrayList<FilesModel>()))
@@ -97,6 +102,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     override fun onResume() {
         super.onResume()
-        (activity as HomeActivity).binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
+        homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
     }
 }

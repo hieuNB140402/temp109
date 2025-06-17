@@ -29,3 +29,4 @@ dependencyResolutionManagement {
 rootProject.name = "ST109_PDF_Reader"
 include ':app'
 include ':office'
+include ':mupdf'

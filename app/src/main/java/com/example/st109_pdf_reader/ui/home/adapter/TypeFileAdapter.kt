@@ -45,7 +45,7 @@ class TypeFileAdapter(val context: Context) : RecyclerView.Adapter<TypeFileAdapt
         fun bind(type: HomeAllFileModel, position: Int) {
             when (type.type) {
                 KeyApp.ALL_FILE -> {
-                    binding.tvType.text = context.getString(R.string.all_files_count, type.quantity)
+                    binding.tvType.text = context.getString(R.string.all_count, type.quantity)
                 }
 
                 KeyApp.WORD -> {

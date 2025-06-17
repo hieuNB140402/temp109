@@ -3,6 +3,7 @@ package com.example.st109_pdf_reader.ui.home
 import android.R.attr.data
 import android.annotation.SuppressLint
 import android.os.Build
+import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
 import android.view.LayoutInflater
@@ -18,6 +19,7 @@ import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
 import com.example.st109_pdf_reader.core.dialog.RateDialog
 import com.example.st109_pdf_reader.core.extensions.animateLift
+import com.example.st109_pdf_reader.core.extensions.backFragmentSlideInFromLeft
 import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.gone
@@ -27,6 +29,7 @@ import com.example.st109_pdf_reader.core.extensions.setGradientTextHeightColor
 import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
 import com.example.st109_pdf_reader.core.extensions.slideInFromLeft
 import com.example.st109_pdf_reader.core.extensions.slideOutToLeft
+import com.example.st109_pdf_reader.core.extensions.startFragmentSlideInFromRight
 import com.example.st109_pdf_reader.core.extensions.startIntentFromLeft
 import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.DataLocal
@@ -41,6 +44,8 @@ import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.local.repository.FileRepository
 import com.example.st109_pdf_reader.databinding.ActivityHomeBinding
 import com.example.st109_pdf_reader.ui.home.adapter.HomeAdapter
+import com.example.st109_pdf_reader.ui.home.fragment.ReaderFragment
+import com.example.st109_pdf_reader.ui.home.fragment.SearchFragment
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModel
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModelFactory
 import com.example.st109_pdf_reader.ui.language.LanguageActivity
@@ -57,6 +62,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
     lateinit var fileViewModel: FileViewModel
     private var isLoadFileSuccess = false
     var fileList = MutableLiveData<ArrayList<FilesModel>>()
+    var isFragmentOther = false
 
     override fun setViewBinding(): ActivityHomeBinding {
         return ActivityHomeBinding.inflate(LayoutInflater.from(this))
@@ -89,6 +95,13 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             fileViewModel =
                 ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
             fileViewModel.scanIfFirstTime(this)
+
+            lifecycleScope.launch {
+                fileViewModel.filesFlow.collectLatest {
+                    fileList.postValue(it.toCollection(ArrayList<FilesModel>()))
+                }
+            }
+
             isLoadFileSuccess = true
         }
     }
@@ -97,6 +110,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         binding.apply {
             actionBar.apply {
                 btnActionBarLeft.setOnSingleClick { handleSettings() }
+                btnActionBarRight.setOnSingleClick { handleSearch() }
             }
             layoutSettings.setOnSingleClick { slideOutToLeft(layoutSettingsShow, layoutSettings) }
             btnLang.setOnSingleClick {
@@ -107,6 +121,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             btnShare.setOnSingleClick(1500) { shareApp() }
             btnRate.setOnSingleClick { rateApp() }
             btnPolicy.setOnSingleClick(1500) { policy() }
+
         }
         handleBottom()
     }
@@ -160,7 +175,6 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             textGradientBottomList = arrayListOf(
                 tvHomeGradient, tvRecentGradient, tvBookmarkGradient, tvSavedGradient
             )
-
             textGradientBottomList.forEach { text ->
                 setGradientTextHeightColor(text, "#F52C2C", "#B10C0C")
             }
@@ -251,34 +265,42 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
 
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
-        if (!SystemUtils.getIsRate(this) && SystemUtils.getCountBack(this) % 2 == 0) {
-            val dialogRate = RateDialog(this)
-            SystemUtils.setLocale(this)
-            dialogRate.show()
-            dialogRate.apply {
-                onRateLess3 = {
-                    SystemUtils.setIsRate(this@HomeActivity, true)
-                    Toast.makeText(this@HomeActivity, R.string.have_rated, Toast.LENGTH_SHORT)
-                        .show()
-                    val handler = Handler()
-                    handler.postDelayed({
+        if (!isFragmentOther){
+            if (!SystemUtils.getIsRate(this) && SystemUtils.getCountBack(this) % 2 == 0) {
+                val dialogRate = RateDialog(this)
+                SystemUtils.setLocale(this)
+                dialogRate.show()
+                dialogRate.apply {
+                    onRateLess3 = {
+                        SystemUtils.setIsRate(this@HomeActivity, true)
+                        Toast.makeText(this@HomeActivity, R.string.have_rated, Toast.LENGTH_SHORT)
+                            .show()
+                        val handler = Handler()
+                        handler.postDelayed({
+                            dialogRate.dismiss()
+                            exitProcess(0)
+                        }, 1000)
+                    }
+                    onRateGreater3 = {
+                        SystemUtils.setIsRate(this@HomeActivity, true)
+                        SystemUtils.reviewApp(this@HomeActivity, true)
+                    }
+
+                    onCancel = {
                         dialogRate.dismiss()
                         exitProcess(0)
-                    }, 1000)
+                    }
                 }
-                onRateGreater3 = {
-                    SystemUtils.setIsRate(this@HomeActivity, true)
-                    SystemUtils.reviewApp(this@HomeActivity, true)
-                }
-
-                onCancel = {
-                    dialogRate.dismiss()
-                    exitProcess(0)
-                }
+            } else {
+                exitProcess(0)
             }
-        } else {
-            exitProcess(0)
+        }else{
+            backFragmentSlideInFromLeft(binding.containerFragment) {
+                supportFragmentManager.popBackStack()
+            }
+            isFragmentOther = false
         }
+
     }
 
     override fun onRestart() {
@@ -290,10 +312,17 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
 
     override fun dataObservable() {
         super.dataObservable()
-        lifecycleScope.launch {
-            fileViewModel.filesFlow.collectLatest {
-                fileList.postValue(it.toCollection(ArrayList<FilesModel>()))
-            }
+
+    }
+
+    private fun handleSearch() {
+        val fragment = SearchFragment()
+        startFragmentSlideInFromRight(binding.containerFragment)
+
+        fragment.let {
+            supportFragmentManager.beginTransaction()
+                .replace(binding.containerFragment.id, fragment).addToBackStack(null).commit()
         }
+        isFragmentOther = true
     }
 }

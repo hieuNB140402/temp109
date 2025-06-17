@@ -5,10 +5,12 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.local.repository.FileRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -95,6 +97,16 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
         }
     }
 
+    fun updateRecentFile(fileId: Int, isRecent: Boolean) {
+        viewModelScope.launch {
+            try {
+                repository.updateRecentFile(fileId, isRecent)
+            } catch (e: Exception) {
+                Log.e("nbhieu", "updateRecentFile: ${e.message}")
+            }
+        }
+    }
+
     fun deleteFileFromPath(path: String) {
         viewModelScope.launch {
             try {
@@ -105,17 +117,22 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
         }
     }
 
-    fun renameFileByPath(path: String, newName: String) {
+    fun renameFileByPath(path: String, newName: String, newPath: String) {
         viewModelScope.launch {
             try {
-                repository.updateNameByPath(path, newName)
+                repository.updateNameByPath(path, newName, newPath)
             } catch (e: Exception) {
                 Log.e("nbhieu", "renameFileByPath: ${e.message}")
             }
         }
     }
 
-    fun getFileBookmarkByType(type: String): StateFlow<List<FilesModel>> =
-        repository.getFileBookmarkByType(type)
-            .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    fun searchFiles(query: String, type: String): Flow<List<FilesModel>> {
+        return if (type == KeyApp.ALL_FILE) {
+            repository.searchFilesByName(query)
+        } else {
+            repository.searchFilesByNameAndType(query, type)
+        }
+    }
+
 }

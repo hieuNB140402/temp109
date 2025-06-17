@@ -1,11 +1,9 @@
 package com.example.st109_pdf_reader.ui.home.fragment
 
 import android.R.attr.path
+import android.content.Intent
 import android.content.res.ColorStateList
-import android.os.Build
-import android.os.Bundle
 import android.util.DisplayMetrics
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -13,19 +11,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.PopupWindow
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
-import com.document.allreader.allofficefilereader.fc.dom4j.dom.DOMNodeHelper.getData
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseFragment
 import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
 import com.example.st109_pdf_reader.core.extensions.backFragmentSlideInFromLeft
-import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
-import com.example.st109_pdf_reader.core.extensions.handleBackFragmentFromRight
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
@@ -45,12 +39,11 @@ import com.example.st109_pdf_reader.databinding.FragmentReaderBinding
 import com.example.st109_pdf_reader.databinding.PopupReaderBinding
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
+import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import kotlin.jvm.java
 
 class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     private var type = KeyApp.ALL_FILE
@@ -61,6 +54,9 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     }
     private var fileList = ArrayList<FilesModel>()
     private var isTypeSort = true
+    private val homeActivity: HomeActivity
+        get() = activity as HomeActivity
+
     override fun setViewBinding(
         inflater: LayoutInflater, container: ViewGroup?
     ): FragmentReaderBinding {
@@ -76,10 +72,9 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         binding.apply {
             actionBar.apply {
                 btnActionBarLeft.setOnSingleClick {
-                    backFragmentSlideInFromLeft(
-                        ((activity as HomeActivity).binding.containerFragment)
-                    ) {
-                        requireActivity().supportFragmentManager.popBackStack()
+                    backFragmentSlideInFromLeft((homeActivity.binding.containerFragment)) {
+                        homeActivity.supportFragmentManager.popBackStack()
+                        homeActivity.isFragmentOther = false
                     }
                 }
                 btnActionBarRight.setOnSingleClick {
@@ -104,8 +99,8 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         binding.actionBar.apply {
             btnActionBarLeft.setImageResource(R.drawable.ic_back_white)
             btnActionBarLeft.visible()
-            tvCenter.text = requireActivity().getString(R.string.pdf_reader)
-            tvCenter.setTextColor(requireActivity().getColor(R.color.white))
+            tvCenter.text = homeActivity.getString(R.string.pdf_reader)
+            tvCenter.setTextColor(homeActivity.getColor(R.color.white))
             tvCenter.visible()
             btnActionBarRight.setImageResource(R.drawable.ic_sort)
             btnActionBarRight.visible()
@@ -142,21 +137,21 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             KeyApp.WORD -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.word)
                 tickList[0].imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.word))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_word)
             }
 
             KeyApp.EXCEL -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.excel)
                 tickList[0].imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.excel))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_excel)
             }
 
             KeyApp.PPT -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.ppt)
                 tickList[0].imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.ppt))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_ppt)
             }
 
@@ -167,11 +162,11 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
         initRcv()
 
-        (activity as HomeActivity).fileViewModel.refreshScan(requireActivity())
+        homeActivity.fileViewModel.refreshScan(requireActivity())
 
         lifecycleScope.launch {
-            (activity as HomeActivity).showLoading()
-            (activity as HomeActivity).fileViewModel.filesFlow.collectLatest {
+            homeActivity.showLoading()
+            homeActivity.fileViewModel.filesFlow.collectLatest {
                 var temp = ArrayList<FilesModel>()
                 when (type) {
                     KeyApp.ALL_FILE -> {
@@ -213,7 +208,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                 fileList.clear()
                 fileList.addAll(sortByNameAZ(temp).toCollection(ArrayList<FilesModel>()))
                 adapter.submitList(fileList)
-                (activity as HomeActivity).dismissLoading()
+                homeActivity.dismissLoading()
             }
         }
     }
@@ -227,17 +222,17 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                         when (type) {
                             KeyApp.WORD -> {
                                 tick.imageTintList =
-                                    ColorStateList.valueOf(requireActivity().getColor(R.color.word))
+                                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                             }
 
                             KeyApp.EXCEL -> {
                                 tick.imageTintList =
-                                    ColorStateList.valueOf(requireActivity().getColor(R.color.excel))
+                                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                             }
 
                             KeyApp.PPT -> {
                                 tick.imageTintList =
-                                    ColorStateList.valueOf(requireActivity().getColor(R.color.ppt))
+                                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                             }
                         }
                     } else {
@@ -245,7 +240,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
                         if (type == KeyApp.WORD || type == KeyApp.EXCEL || type == KeyApp.PPT) {
                             tick.imageTintList =
-                                ColorStateList.valueOf(requireActivity().getColor(R.color.gray_CE))
+                                ColorStateList.valueOf(homeActivity.getColor(R.color.gray_CE))
                         }
 
                     }
@@ -276,20 +271,23 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     }
 
     private fun handleRcv() {
-        adapter.onBookmarkClick = { file, position ->
-            handleBookmark(file, position)
-
+        adapter.apply {
+            onBookmarkClick = { file, position ->
+                handleBookmark(file, position)
+            }
+            onLongClick = { position ->
+                handleLongItemClick(position)
+            }
+            onItemSelect = { positionTick ->
+                handleSelect(positionTick)
+            }
+            onMoreClick = { file, position, view ->
+                handleMoreMyDesign(file, position, view)
+            }
+            onItemClick = { file ->
+                handleClickItem(file)
+            }
         }
-        adapter.onLongClick = { position ->
-            handleLongItemClick(position)
-        }
-        adapter.onItemSelect = { positionTick ->
-            handleSelect(positionTick)
-        }
-        adapter.onMoreClick = { file, position, view ->
-            handleMoreMyDesign(file, position, view)
-        }
-
         binding.rcvFile.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
             override fun onInterceptTouchEvent(
                 recyclerView: RecyclerView, motionEvent: MotionEvent
@@ -312,7 +310,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     }
 
     private fun handleBookmark(file: FilesModel, position: Int) {
-        (activity as HomeActivity).fileViewModel.updateBookmark(file.id, !file.isBookmark)
+        homeActivity.fileViewModel.updateBookmark(file.id, !file.isBookmark)
         adapter.submitItemBookmark(position)
     }
 
@@ -388,10 +386,10 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             }
         }
         if (shareList.isEmpty()) {
-            requireActivity().showToast(getString(R.string.please_choose_a_file))
+            homeActivity.showToast(getString(R.string.please_choose_a_file))
             return
         }
-        (activity as HomeActivity).shareFile(shareList)
+        homeActivity.shareFile(shareList)
     }
 
     private fun handleDelete() {
@@ -404,7 +402,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         confirmDialog.show()
         confirmDialog.onNoClick = {
             confirmDialog.dismiss()
-            requireActivity().hideNavigation()
+            homeActivity.hideNavigation()
         }
         confirmDialog.onYesClick = {
             confirmDialog.dismiss()
@@ -415,12 +413,12 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                 }
             }
             if (deleteList.isEmpty()) {
-                requireActivity().showToast(getString(R.string.please_choose_a_file))
+                homeActivity.showToast(getString(R.string.please_choose_a_file))
 
             } else {
-                (activity as HomeActivity).handleDeleteFile(
-                    (activity as HomeActivity).loadingDialog,
-                    (activity as HomeActivity).fileViewModel,
+                homeActivity.handleDeleteFile(
+                    homeActivity.loadingDialog,
+                    homeActivity.fileViewModel,
                     deleteList,
                     onFinish = { status ->
                         if (status) {
@@ -432,10 +430,10 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                             adapter.submitList(fileList)
 
                         } else {
-                            requireActivity().showToast(getString(R.string.file_not_exist))
+                            homeActivity.showToast(getString(R.string.file_not_exist))
                         }
                         lifecycleScope.launch {
-                            (activity as HomeActivity).dismissLoading()
+                            homeActivity.dismissLoading()
                         }
                     })
             }
@@ -458,37 +456,37 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             KeyApp.WORD -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_word)
                 popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.word))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                 popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.word))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                 popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.word))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                 popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.word))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
             }
 
             KeyApp.EXCEL -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_excel)
                 popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.excel))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                 popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.excel))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                 popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.excel))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                 popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.excel))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
             }
 
             KeyApp.PPT -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_ppt)
                 popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.ppt))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                 popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.ppt))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                 popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.ppt))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                 popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(requireActivity().getColor(R.color.ppt))
+                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
             }
         }
         popupBinding.tvOpenFile.select()
@@ -496,34 +494,35 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         popupBinding.tvShare.select()
         popupBinding.tvDelete.select()
 
-//        popupBinding.btnOpenFile.setOnSingleClick {
-//            handleDeleteItemPopup(path, popupWindow)
-//        }
+        popupBinding.btnOpenFile.setOnSingleClick {
+            popupWindow.dismiss()
+            handleClickItem(file)
+        }
         popupBinding.btnRename.setOnSingleClick {
             handleRename(file, position, popupWindow)
         }
         popupBinding.btnShare.setOnSingleClick {
             popupWindow.dismiss()
-            (activity as HomeActivity).shareFile(file.path)
+            homeActivity.shareFile(file.path)
         }
         popupBinding.btnDelete.setOnSingleClick {
             handleDelete(file.path, position, popupWindow)
         }
 
-        val xOffset = requireActivity().dpToPx(-100)
-        val yOffset = requireActivity().dpToPx(6)
+        val xOffset = homeActivity.dpToPx(-100)
+        val yOffset = homeActivity.dpToPx(6)
 
         val location = IntArray(2)
         view.getLocationOnScreen(location)
         val viewY = location[1]
         val displayMetrics = DisplayMetrics()
-        requireActivity().windowManager.defaultDisplay.getMetrics(displayMetrics)
+        homeActivity.windowManager.defaultDisplay.getMetrics(displayMetrics)
         val screenHeight = displayMetrics.heightPixels
         val distanceToBottom = screenHeight - viewY - view.height
-        if (distanceToBottom >= requireActivity().dpToPx(180)) {
+        if (distanceToBottom >= homeActivity.dpToPx(180)) {
             popupWindow.showAsDropDown(view, xOffset, yOffset)
         } else {
-            popupWindow.showAsDropDown(view, xOffset, requireActivity().dpToPx(-135))
+            popupWindow.showAsDropDown(view, xOffset, homeActivity.dpToPx(-135))
         }
     }
 
@@ -538,13 +537,13 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         confirmDialog.show()
         confirmDialog.onNoClick = {
             confirmDialog.dismiss()
-            requireActivity().hideNavigation()
+            homeActivity.hideNavigation()
         }
         confirmDialog.onYesClick = {
             confirmDialog.dismiss()
             val homeActivity = (activity as HomeActivity)
             if (!File(path).exists()) {
-                requireActivity().showToast(getString(R.string.please_choose_a_file))
+                homeActivity.showToast(getString(R.string.please_choose_a_file))
             } else {
                 homeActivity.handleDeleteFile(
                     homeActivity.loadingDialog,
@@ -555,10 +554,10 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                             fileList.removeAt(position)
                             adapter.submitList(fileList)
                         } else {
-                            requireActivity().showToast(getString(R.string.file_not_exist))
+                            homeActivity.showToast(getString(R.string.file_not_exist))
                         }
                         lifecycleScope.launch {
-                            (activity as HomeActivity).dismissLoading()
+                            homeActivity.dismissLoading()
                         }
                     })
             }
@@ -591,7 +590,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                         fileList[position].name = newName
                         adapter.notifyItemChanged(position)
                     } else {
-                        requireActivity().showToast(getString(R.string.file_not_exist))
+                        homeActivity.showToast(getString(R.string.file_not_exist))
                     }
 
                     lifecycleScope.launch {
@@ -599,5 +598,16 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                     }
                 })
         }
+    }
+
+    private fun handleClickItem(file: FilesModel) {
+        val intent = if (file.type != KeyApp.PDF) {
+            Intent(requireActivity(), ViewActivity::class.java)
+        } else {
+            Intent(requireActivity(), PdfActivity::class.java)
+        }
+        homeActivity.fileViewModel.updateRecentFile(file.id, true)
+        intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+        startActivity(intent)
     }
 }

@@ -34,7 +34,7 @@
             android:layout_marginBottom="15dp"
             android:fontFamily="@font/roboto_medium"
             android:gravity="center_horizontal"
-            android:text="@string/all_files_count"
+            android:text="@string/all_count"
             android:textColor="@color/black_2D"
             android:textSize="14sp" />
     </LinearLayout>

@@ -1,20 +1,17 @@
 package com.example.st109_pdf_reader.ui.home.fragment
 
+import android.content.Intent
 import android.content.res.ColorStateList
-import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseFragment
 import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
-import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
@@ -34,14 +31,13 @@ import com.example.st109_pdf_reader.databinding.PopupReaderBinding
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
 import com.example.st109_pdf_reader.ui.home.adapter.TypeFileAdapter
+import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
 
 class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
-
     private val typeAdapter by lazy { TypeFileAdapter(requireActivity()) }
     private val bookmarkAdapter by lazy { ReaderAdapter(requireActivity()) }
 
@@ -88,7 +84,6 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
     override fun onResume() {
         super.onResume()
         updateHeaderBackground()
-        homeActivity.dLog("onResume")
     }
 
     private fun initRcv() {
@@ -112,6 +107,9 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
         }
 
         bookmarkAdapter.apply {
+            onItemClick = {file ->
+                handleOpenFile(file)
+            }
             onBookmarkClick = { file, position ->
                 handleBookmark(file, position)
             }
@@ -124,7 +122,7 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
     private fun submitAdapter(fileList: ArrayList<FilesModel>) {
         typeList.clear()
         typeList.addAll(handleConvertFile(fileList, isBookmark = true))
-        val positionType = typeList.indexOfFirst{it.type == type}
+        val positionType = typeList.indexOfFirst { it.type == type }
         typeList[positionType].isSelected = true
         typeAdapter.submitList(typeList)
     }
@@ -165,13 +163,14 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
     private fun checkListSize() {
         if (bookmarkList.isEmpty()) {
             binding.layoutNoItem.visible()
-        } else {
+        }
+        else {
             binding.layoutNoItem.gone()
         }
     }
 
     private fun handleBookmark(file: FilesModel, position: Int) {
-        (activity as HomeActivity).fileViewModel.updateBookmark(file.id, !file.isBookmark)
+        homeActivity.fileViewModel.updateBookmark(file.id, !file.isBookmark)
         bookmarkList.removeAt(position)
         getFileList.remove(file)
         bookmarkAdapter.submitList(bookmarkList)
@@ -180,48 +179,32 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
     private fun handleMoreMyDesign(file: FilesModel, position: Int, view: View) {
         val popupBinding = PopupReaderBinding.inflate(LayoutInflater.from(homeActivity))
         val popupWindow = PopupWindow(
-            popupBinding.root,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
-        )
+            popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true)
         popupWindow.elevation = 10f
 
         when (type) {
             KeyApp.WORD -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_word)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
             }
 
             KeyApp.EXCEL -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_excel)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
             }
 
             KeyApp.PPT -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_ppt)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
             }
         }
         popupBinding.tvOpenFile.select()
@@ -229,9 +212,9 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
         popupBinding.tvShare.select()
         popupBinding.tvDelete.select()
 
-//        popupBinding.btnOpenFile.setOnSingleClick {
-//            handleDeleteItemPopup(path, popupWindow)
-//        }
+        popupBinding.btnOpenFile.setOnSingleClick {
+            handleOpenFile(file)
+        }
         popupBinding.btnRename.setOnSingleClick {
             handleRename(file, position, popupWindow)
         }
@@ -255,7 +238,8 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
         val distanceToBottom = screenHeight - viewY - view.height
         if (distanceToBottom >= homeActivity.dpToPx(180)) {
             popupWindow.showAsDropDown(view, xOffset, yOffset)
-        } else {
+        }
+        else {
             popupWindow.showAsDropDown(view, xOffset, homeActivity.dpToPx(-135))
         }
     }
@@ -263,8 +247,7 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
     private fun handleDelete(path: String, position: Int, popupWindow: PopupWindow) {
         popupWindow.dismiss()
         val confirmDialog = ConfirmDialog(
-            homeActivity, R.string.delete, R.string.do_you_want_to_delete_this_file
-        )
+            homeActivity, R.string.delete, R.string.do_you_want_to_delete_this_file)
         SystemUtils.setLocale(homeActivity)
         confirmDialog.show()
         confirmDialog.onNoClick = {
@@ -273,25 +256,22 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
         }
         confirmDialog.onYesClick = {
             confirmDialog.dismiss()
-            val homeActivity = (activity as HomeActivity)
             if (!File(path).exists()) {
                 homeActivity.showToast(getString(R.string.file_not_exist))
-            } else {
-                homeActivity.handleDeleteFile(
-                    homeActivity.loadingDialog,
-                    homeActivity.fileViewModel,
-                    path,
-                    onFinish = { status ->
-                        if (status) {
-                            bookmarkList.removeAt(position)
-                            bookmarkAdapter.submitList(bookmarkList)
-                        } else {
-                            homeActivity.showToast(getString(R.string.file_not_exist))
-                        }
-                        lifecycleScope.launch {
-                            (activity as HomeActivity).dismissLoading()
-                        }
-                    })
+            }
+            else {
+                homeActivity.handleDeleteFile(homeActivity.loadingDialog, homeActivity.fileViewModel, path, onFinish = { status ->
+                    if (status) {
+                        bookmarkList.removeAt(position)
+                        bookmarkAdapter.submitList(bookmarkList)
+                    }
+                    else {
+                        homeActivity.showToast(getString(R.string.file_not_exist))
+                    }
+                    lifecycleScope.launch {
+                        (activity as HomeActivity).dismissLoading()
+                    }
+                })
             }
 
         }
@@ -299,7 +279,6 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
 
     private fun handleRename(file: FilesModel, position: Int, popupWindow: PopupWindow) {
         popupWindow.dismiss()
-        val homeActivity = (activity as HomeActivity)
         val renameDialog = RenameDialog(homeActivity, file.name)
         SystemUtils.setLocale(homeActivity)
         renameDialog.show()
@@ -312,38 +291,30 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
             val extensionArray = file.path.split(".")
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
-            renameFileByPath(
-                homeActivity.loadingDialog,
-                homeActivity.fileViewModel,
-                file.path,
-                newNameWithExtension,
-                onFinish = { status ->
-                    if (status) {
-                        bookmarkList[position].name = newName
-                        bookmarkAdapter.notifyItemChanged(position)
-                    } else {
-                        homeActivity.showToast(getString(R.string.file_not_exist))
-                    }
+            renameFileByPath(homeActivity.loadingDialog, homeActivity.fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
+                if (status) {
+                    bookmarkList[position].name = newName
+                    bookmarkAdapter.notifyItemChanged(position)
+                }
+                else {
+                    homeActivity.showToast(getString(R.string.file_not_exist))
+                }
 
-                    lifecycleScope.launch {
-                        homeActivity.dismissLoading()
-                    }
-                })
+                lifecycleScope.launch {
+                    homeActivity.dismissLoading()
+                }
+            })
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        homeActivity.dLog("onStart")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        homeActivity.dLog("onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        homeActivity.dLog("onStop")
+    private fun handleOpenFile(file: FilesModel) {
+        val intent = if (file.type != KeyApp.PDF) {
+            Intent(homeActivity, ViewActivity::class.java)
+        } else {
+            Intent(homeActivity, PdfActivity::class.java)
+        }
+        homeActivity.fileViewModel.updateRecentFile(file.id, true)
+        intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+        startActivity(intent)
     }
 }

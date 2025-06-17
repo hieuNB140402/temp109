@@ -32,11 +32,16 @@ interface FileDao {
     @Query("UPDATE file SET isBookmark = :isBookmark WHERE id = :id")
     suspend fun updateBookmark(id: Int, isBookmark: Boolean)
 
-    @Query("UPDATE file SET name = :newName WHERE path = :path")
-    suspend fun updateNameByPath(path: String, newName: String)
+    @Query("UPDATE file SET isRecentFiles = :isRecent WHERE id = :id")
+    suspend fun updateRecentFile(id: Int, isRecent: Boolean)
 
-    @Query("SELECT * FROM file WHERE type = :type AND isBookmark = 1")
-    fun getFileBookmarkByType(type: String): Flow<List<FilesModel>>
+    @Query("UPDATE file SET name = :newName, path = :newPath WHERE path = :path")
+    suspend fun updateNameByPath(path: String, newName: String, newPath: String)
 
+    @Query("SELECT * FROM file WHERE name LIKE '%' || :query || '%'")
+    fun searchFilesByName(query: String): Flow<List<FilesModel>>
+
+    @Query("SELECT * FROM file WHERE name LIKE '%' || :query || '%' AND type = :type")
+    fun searchFilesByNameAndType(query: String, type: String): Flow<List<FilesModel>>
 
 }

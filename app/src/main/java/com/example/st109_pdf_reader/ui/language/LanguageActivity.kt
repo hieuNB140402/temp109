@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
-import com.example.st109_pdf_reader.core.extensions.handleBackFromRight
+import com.example.st109_pdf_reader.core.extensions.handleBackLeftToRight
 import com.example.st109_pdf_reader.core.extensions.select
 import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
 import com.example.st109_pdf_reader.core.extensions.showToast
@@ -40,7 +40,7 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
 
     override fun viewListener() {
         binding.apply {
-            actionBar.btnActionBarLeft.setOnSingleClick { handleBackFromRight() }
+            actionBar.btnActionBarLeft.setOnSingleClick { handleBackLeftToRight() }
             actionBar.btnActionBarRight.setOnSingleClick { handleDone() }
         }
         handleRcv()
@@ -135,7 +135,7 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         if (!SystemUtils.getFirstLang(this)) {
-            handleBackFromRight()
+            handleBackLeftToRight()
         } else {
             exitProcess(0)
         }

@@ -2,6 +2,7 @@ package com.example.st109_pdf_reader.ui.home.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +23,7 @@ class ReaderAdapter(val context: Context) : RecyclerView.Adapter<ReaderAdapter.R
     var onLongClick: ((Int) -> Unit)? = null
     var onItemSelect: ((Int) -> Unit)? = null
     var onMoreClick: ((FilesModel, Int, View) -> Unit)? = null
-
+    var onItemClick: ((FilesModel) -> Unit)? = null
     override fun onCreateViewHolder(
         parent: ViewGroup, viewType: Int
     ): ReaderVH {
@@ -107,6 +108,8 @@ class ReaderAdapter(val context: Context) : RecyclerView.Adapter<ReaderAdapter.R
             binding.btnMore.setOnSingleClick {
                 onMoreClick?.invoke(file, position, it)
             }
+
+            binding.root.setOnSingleClick { onItemClick?.invoke(file) }
         }
     }
 

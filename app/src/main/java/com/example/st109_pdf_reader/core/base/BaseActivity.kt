@@ -11,7 +11,7 @@ import androidx.viewbinding.ViewBinding
 import com.example.st109_pdf_reader.core.dialog.GoToSettingsDialog
 import com.example.st109_pdf_reader.core.dialog.LoadingDialog
 import com.example.st109_pdf_reader.core.extensions.checkPermissions
-import com.example.st109_pdf_reader.core.extensions.handleBackFromRight
+import com.example.st109_pdf_reader.core.extensions.handleBackLeftToRight
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
@@ -68,7 +68,7 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
 
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
-        handleBackFromRight()
+        handleBackLeftToRight()
     }
 
     suspend fun showLoading() {

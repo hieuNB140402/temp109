@@ -20,6 +20,9 @@ class FileRepository(private val fileDao: FileDao) {
     suspend fun updateBookmark(fileId: Int, isBookmark: Boolean) {
         fileDao.updateBookmark(fileId, isBookmark)
     }
+    suspend fun updateRecentFile(fileId: Int, isRecent: Boolean) {
+        fileDao.updateRecentFile(fileId, isRecent)
+    }
 
 
     fun getAllFilesFlow(): Flow<List<FilesModel>> = fileDao.getAllFilesFlow()
@@ -32,8 +35,8 @@ class FileRepository(private val fileDao: FileDao) {
         fileDao.deleteFilesByPath(path)
     }
 
-    suspend fun updateNameByPath(path: String, newName: String){
-        fileDao.updateNameByPath(path, newName)
+    suspend fun updateNameByPath(path: String, newName: String, newPath: String){
+        fileDao.updateNameByPath(path, newName, newPath)
     }
 
     fun scanDeviceFiles(context: Context): List<FilesModel> {
@@ -68,8 +71,12 @@ class FileRepository(private val fileDao: FileDao) {
         }
         return list
     }
-
-    fun getFileBookmarkByType(type: String) : Flow<List<FilesModel>> {
-        return fileDao.getFileBookmarkByType(type)
+    fun searchFilesByName(query: String): Flow<List<FilesModel>> {
+        return fileDao.searchFilesByName(query)
     }
+
+    fun searchFilesByNameAndType(query: String, type: String): Flow<List<FilesModel>> {
+        return fileDao.searchFilesByNameAndType(query, type)
+    }
+
 }

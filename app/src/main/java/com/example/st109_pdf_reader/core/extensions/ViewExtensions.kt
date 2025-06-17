@@ -31,6 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
@@ -223,59 +224,56 @@ internal fun shareImage(context: Context, imageUri: Uri) {
     context.startActivity(Intent.createChooser(intent, "Share Images"))
 }
 
-fun renameFileByPath(dialog: LoadingDialog, viewModel: FileViewModel, path: String, newNameWithExtension: String, onFinish: ((Boolean) -> Unit)) {
+fun renameFileByPath(
+    dialog: LoadingDialog,
+    viewModel: FileViewModel,
+    path: String,
+    newNameWithExtension: String,
+    onFinish: ((Boolean) -> Unit)
+) {
     dialog.show()
     val handleExceptionCoroutine = CoroutineExceptionHandler { _, throwable ->
-        Log.e("nbhieu", "handleDeleteFile: ${throwable.message}")
-    }
-    CoroutineScope(SupervisorJob() + Dispatchers.IO + handleExceptionCoroutine).launch {
-        val job1 = async {
-            val oldFile = File(path)
-
-            val domainArray = path.split("/")
-            var domain = ""
-            domainArray.forEachIndexed { index, partDomain ->
-                if (index != domainArray.size - 1) {
-                    domain += partDomain
-                }
-            }
-
-            val newFile = File("${domain}/${newNameWithExtension}")
-
-            if (oldFile.exists()) {
-                if (!newFile.exists()) {
-                    viewModel.renameFileByPath(path, newNameWithExtension)
-                    oldFile.renameTo(File(oldFile.parent, newNameWithExtension))
-                    return@async true
-
-                }
-                else {
-                    return@async false
-                }
-
-            }
-            else {
-                return@async false
-            }
-
+        Log.e("nbhieu", "renameFileByPath: ${throwable.message}", throwable)
+        CoroutineScope(Dispatchers.Main).launch {
+            dialog.dismiss()
+            onFinish(false)
         }
-        launch(Dispatchers.Main) {
-            if (job1.await() == true) {
-                onFinish.invoke(true)
+    }
+
+    CoroutineScope(SupervisorJob() + Dispatchers.IO + handleExceptionCoroutine).launch {
+        val result = runCatching {
+            val oldFile = File(path)
+            val parentDir = oldFile.parent ?: return@runCatching false
+            val newPath = "$parentDir/$newNameWithExtension"
+            val newFile = File(newPath)
+
+            if (!oldFile.exists() || newFile.exists()) return@runCatching false
+
+            // Rename file in storage
+            val renameSuccess = oldFile.renameTo(newFile)
+
+            // Update in Room
+            if (renameSuccess) {
+                viewModel.renameFileByPath(path, newNameWithExtension, newPath)
             }
-            else {
-                onFinish.invoke(false)
-            }
+
+            renameSuccess
+        }
+
+        withContext(Dispatchers.Main) {
+            dialog.dismiss()
+            onFinish(result.getOrElse { false })
         }
     }
 }
 
-internal fun Activity.handleBackFromRight() {
+
+internal fun Activity.handleBackLeftToRight() {
     finish()
     overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
 }
 
-internal fun Activity.handleBackFromLeft() {
+internal fun Activity.handleBackRightToLeft() {
     finish()
     overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left)
 }

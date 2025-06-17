@@ -58,6 +58,8 @@ android {
 
 dependencies {
     implementation project(path: ':office')
+    implementation project(path: ':mupdf')
+
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.material

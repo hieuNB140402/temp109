@@ -319,7 +319,7 @@ fun startFragmentSlideInFromRight(view: FrameLayout) {
         Animation.RELATIVE_TO_PARENT, 0.0f, // fromYDelta
         Animation.RELATIVE_TO_PARENT, 0.0f  // toYDelta
     )
-    animate.duration = 500
+    animate.duration = 300
     view.startAnimation(animate)
 }
 
@@ -330,7 +330,7 @@ fun backFragmentSlideInFromLeft(view: FrameLayout, onFinish: (() -> Unit)) {
         Animation.RELATIVE_TO_PARENT, 0.0f, // fromYDelta
         Animation.RELATIVE_TO_PARENT, 0.0f  // toYDelta
     )
-    animate.duration = 500
+    animate.duration = 300
     animate.setAnimationListener(object : Animation.AnimationListener {
         override fun onAnimationEnd(animation: Animation?) {
             onFinish.invoke()
