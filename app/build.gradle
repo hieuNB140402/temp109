@@ -132,4 +132,10 @@ dependencies {
     // Dagger + Hilt
     implementation "com.google.dagger:hilt-android:2.51"
     kapt "com.google.dagger:hilt-compiler:2.51"
+    // Crop View
+//    implementation("com.vanniktech:android-image-cropper:4.6.0")
+    // Crop Image
+    implementation 'com.github.yalantis:ucrop:2.2.8'
+
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
 }

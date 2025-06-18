@@ -1,6 +1,7 @@
 package com.example.st109_pdf_reader.core.extensions
 
 import android.content.Context
+import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
@@ -18,4 +19,10 @@ fun loadImageGlide(constraintLayout: ConstraintLayout, path: String, imageView: 
         setShimmer(SystemUtils.shimmer)
     }
     Glide.with(constraintLayout).load(path).placeholder(shimmerDrawable).error(shimmerDrawable).into(imageView)
+}
+fun loadImageGlide(frameLayout: FrameLayout, path: String, imageView: ImageView) {
+    val shimmerDrawable = ShimmerDrawable().apply {
+        setShimmer(SystemUtils.shimmer)
+    }
+    Glide.with(frameLayout).load(path).placeholder(shimmerDrawable).error(shimmerDrawable).into(imageView)
 }

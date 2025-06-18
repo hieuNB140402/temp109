@@ -85,6 +85,7 @@ class PermissionActivity : BaseActivity<ActivityPermissionBinding>() {
                     }
                 }
             }
+
             switchNotificationPermission.setOnSingleClick {
                 if (checkPermissions(notificationPermission)) {
                     Toast.makeText(
@@ -209,6 +210,7 @@ class PermissionActivity : BaseActivity<ActivityPermissionBinding>() {
                 setStoragePermission(this, (SystemUtils.getStoragePermission(this) + 1))
             }
         }
+
         else if (requestCode == NOTIFICATION_PERMISSION_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 binding.switchNotificationPermission.setImageResource(R.drawable.ic_sw_on)

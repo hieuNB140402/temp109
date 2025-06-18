@@ -112,4 +112,14 @@
     <string name="the_app_need_read_storage_permission">The app need read storage permission</string>
     <string name="go_to_settings">Go To Settings</string>
     <string name="search_file">Search file...</string>
+    <string name="no_item_here">No Item Here</string>
+
+    <string name="count_item_selected">%d item selected</string>
+    <string name="clear_all">Clear All</string>
+    <string name="from_camera">From Camera</string>
+    <string name="from_gallery">From Gallery</string>
+    <string name="replace">Replace</string>
+    <string name="cutout">Cutout</string>
+    <string name="filter">Filter</string>
+    <string name="create_pdf">Create PDF</string>
 </resources>

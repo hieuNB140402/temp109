@@ -2,6 +2,7 @@ package com.example.st109_pdf_reader.ui.home
 
 import android.R.attr.data
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -35,14 +36,18 @@ import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.DataLocal
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.KeyApp.KeyIntent.INTENT_KEY
+import com.example.st109_pdf_reader.core.utils.KeyApp.RequestCode.STORAGE_PERMISSION_CODE
 import com.example.st109_pdf_reader.core.utils.SystemUtils
+import com.example.st109_pdf_reader.core.utils.SystemUtils.getStoragePermission
 import com.example.st109_pdf_reader.core.utils.SystemUtils.policy
+import com.example.st109_pdf_reader.core.utils.SystemUtils.setStoragePermission
 import com.example.st109_pdf_reader.core.utils.SystemUtils.shareApp
 import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
 import com.example.st109_pdf_reader.data.local.AppDatabase
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.local.repository.FileRepository
 import com.example.st109_pdf_reader.databinding.ActivityHomeBinding
+import com.example.st109_pdf_reader.ui.create.gallery.GalleryActivity
 import com.example.st109_pdf_reader.ui.home.adapter.HomeAdapter
 import com.example.st109_pdf_reader.ui.home.fragment.ReaderFragment
 import com.example.st109_pdf_reader.ui.home.fragment.SearchFragment
@@ -324,5 +329,20 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
                 .replace(binding.containerFragment.id, fragment).addToBackStack(null).commit()
         }
         isFragmentOther = true
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                startIntentFromLeft(GalleryActivity::class.java)
+            } else {
+                SystemUtils.setStoragePermission(this, (getStoragePermission(this) + 1))
+            }
+        }
     }
 }

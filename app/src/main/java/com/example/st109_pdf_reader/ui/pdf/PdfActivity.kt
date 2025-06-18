@@ -1,6 +1,9 @@
 package com.example.st109_pdf_reader.ui.pdf
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.view.LayoutInflater
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
@@ -19,9 +22,22 @@ import com.artifex.mupdfdemo.MuPDFPageAdapter
 import com.artifex.mupdfdemo.MuPDFReaderView
 import com.artifex.mupdfdemo.SearchTask
 import com.artifex.mupdfdemo.SearchTaskResult
+import com.example.st109_pdf_reader.core.extensions.createBimapFromView
+import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
+import com.example.st109_pdf_reader.core.utils.SystemUtils
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import java.util.Locale
 
-class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSupport {
+class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSupport,
+    TextToSpeech.OnInitListener {
 
     //    private val viewmodel: EditViewModel by viewModels()
     private var core: MuPDFCore? = null
@@ -37,6 +53,11 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         Eraser,
     }
 
+    private lateinit var textToSpeech: TextToSpeech
+    private var textList: List<String> = listOf()
+    private var currentIndex = 0
+    private var isPaused = false
+
     override fun setViewBinding(): ActivityPdfBinding {
         return ActivityPdfBinding.inflate(LayoutInflater.from(this))
     }
@@ -49,6 +70,9 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         binding.apply {
             actionBar.apply {
                 btnActionBarLeft.setOnSingleClick { handleBackLeftToRight() }
+            }
+            btnSpeech.setOnSingleClick {
+                handleSpeech()
             }
         }
     }
@@ -87,6 +111,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             }
             createUI()
             core?.canProof()
+            textToSpeech = TextToSpeech(this, this)
         } catch (e: Exception) {
             eLog("initData: ${e.message}")
         }
@@ -149,5 +174,114 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
     override fun onResume() {
         super.onResume()
         hideNavigation()
+    }
+
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            val locale = when (SystemUtils.getPreLanguage(this)) {
+                "hi" -> Locale("hi", "IN")
+                "es" -> Locale("es", "ES")
+                "fr" -> Locale.FRANCE
+                "en" -> Locale.ENGLISH
+                "pt" -> Locale("pt", "PT")
+                "id", "in" -> Locale("id", "ID")
+                "de" -> Locale.GERMANY
+                else -> Locale.ENGLISH
+            }
+            val result = textToSpeech.isLanguageAvailable(locale)
+            if (result == TextToSpeech.LANG_AVAILABLE || result == TextToSpeech.LANG_COUNTRY_AVAILABLE) {
+                textToSpeech.language = locale
+            } else {
+                textToSpeech.language = Locale.ENGLISH
+            }
+
+            textToSpeech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) {}
+                override fun onDone(utteranceId: String?) {
+                    if (!isPaused) {
+                        currentIndex++
+                        speakNext()
+                    }
+                }
+
+                override fun onError(utteranceId: String?) {}
+            })
+
+        }
+    }
+
+    private fun handleSpeech() {
+        CoroutineScope(Job() + Dispatchers.IO).launch {
+            var bitmap: Bitmap? = null
+            val job1 = async {
+                bitmap = createBimapFromView(binding.rlViewPdf)
+                return@async true
+            }
+            launch(Dispatchers.Main) {
+                if (job1.await()) {
+                    recognizeTextFromBitmap(bitmap!!) { text ->
+                        dLog("text: $text")
+                        speakText(text)
+                    }
+                }
+            }
+        }
+    }
+
+    fun speakText(fullText: String) {
+        textList = fullText.split(Regex("(?<=[.!?])\\s+"))
+        currentIndex = 0
+        isPaused = false
+        speakNext()
+    }
+
+    private fun speakNext() {
+        if (currentIndex < textList.size) {
+            val text = textList[currentIndex]
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, currentIndex.toString())
+        }
+    }
+
+    fun recognizeTextFromBitmap(bitmap: Bitmap, callback: (String) -> Unit) {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+        recognizer.process(image).addOnSuccessListener { visionText ->
+            // Gọi callback với kết quả văn bản
+            callback(visionText.text)
+        }.addOnFailureListener { e ->
+            e.printStackTrace()
+            callback("Lỗi: ${e.message}")
+        }
+    }
+
+
+    fun pauseTTS() {
+        isPaused = true
+        textToSpeech.stop()
+    }
+
+    fun resumeTTS() {
+        isPaused = false
+        speakNext()
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (::textToSpeech.isInitialized) {
+            textToSpeech.stop()
+            textToSpeech.shutdown()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        pauseTTS()
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        resumeTTS()
     }
 }

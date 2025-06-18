@@ -25,6 +25,7 @@ import com.example.st109_pdf_reader.core.utils.KeyApp.KeyPermission.RINGTONE_KEY
 import com.example.st109_pdf_reader.core.utils.KeyApp.KeyPermission.RING_TIME_KEY
 import com.example.st109_pdf_reader.core.utils.KeyApp.KeyPermission.SOUND_KEY
 import com.example.st109_pdf_reader.core.utils.KeyApp.KeyPermission.STORAGE_KEY
+import com.example.st109_pdf_reader.core.utils.KeyApp.KeyPermission.STORAGE_KEY_IMAGE
 import com.example.st109_pdf_reader.core.utils.KeyApp.KeyPermission.VIBRATION_KEY
 import com.example.st109_pdf_reader.core.utils.KeyApp.KeySharePreference.COUNT_BACK
 import com.example.st109_pdf_reader.core.utils.KeyApp.KeySharePreference.COUNT_BACK_KEY
@@ -211,6 +212,20 @@ object SystemUtils {
             context.getSharedPreferences(IS_STORAGE, Context.MODE_PRIVATE)
         val editor = preferences.edit()
         editor.putInt(STORAGE_KEY, count)
+        editor.apply()
+    }
+
+    fun getStoragePermissionImage(context: Context): Int {
+        val preferences: SharedPreferences =
+            context.getSharedPreferences(STORAGE_KEY_IMAGE, Context.MODE_PRIVATE)
+        return preferences.getInt(STORAGE_KEY_IMAGE, 0)
+    }
+
+    fun setStoragePermissionImage(context: Context, count: Int) {
+        val preferences: SharedPreferences =
+            context.getSharedPreferences(STORAGE_KEY_IMAGE, Context.MODE_PRIVATE)
+        val editor = preferences.edit()
+        editor.putInt(STORAGE_KEY_IMAGE, count)
         editor.apply()
     }
 

@@ -43,6 +43,7 @@ object KeyApp {
     object KeyPermission {
         const val IS_STORAGE = "IS_STORAGE"
         const val STORAGE_KEY = "STORAGE_KEY"
+        const val STORAGE_KEY_IMAGE = "STORAGE_KEY_IMAGE"
         const val IS_NOTIFICATION = "IS_NOTIFICATION"
         const val NOTIFICATION_KEY = "NOTIFICATION_KEY"
         const val CAMERA_KEY = "CAMERA_KEY"
@@ -55,6 +56,7 @@ object KeyApp {
 
     object RequestCode {
         const val STORAGE_PERMISSION_CODE = 999
+        const val STORAGE_PERMISSION_CODE_IMAGE = 999234
         const val NOTIFICATION_PERMISSION_CODE = 997
         const val PICK_IMAGE_REQUEST_CODE = 103
         const val PICK_AUDIO_REQUEST_CODE = 10341347
