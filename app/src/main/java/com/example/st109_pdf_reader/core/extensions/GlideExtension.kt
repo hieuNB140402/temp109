@@ -20,6 +20,12 @@ fun loadImageGlide(constraintLayout: ConstraintLayout, path: String, imageView: 
     }
     Glide.with(constraintLayout).load(path).placeholder(shimmerDrawable).error(shimmerDrawable).into(imageView)
 }
+fun loadImageGlide(constraintLayout: ConstraintLayout, path: Int, imageView: ImageView) {
+    val shimmerDrawable = ShimmerDrawable().apply {
+        setShimmer(SystemUtils.shimmer)
+    }
+    Glide.with(constraintLayout).load(path).placeholder(shimmerDrawable).error(shimmerDrawable).into(imageView)
+}
 fun loadImageGlide(frameLayout: FrameLayout, path: String, imageView: ImageView) {
     val shimmerDrawable = ShimmerDrawable().apply {
         setShimmer(SystemUtils.shimmer)

@@ -8,6 +8,7 @@ import com.example.st109_pdf_reader.data.model.IntroModel
 import com.example.st109_pdf_reader.data.model.LanguageModel
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.data.model.create.AllImageModel
+import com.example.st109_pdf_reader.data.model.create.FilterModel
 import com.example.st109_pdf_reader.data.model.create.ImageModel
 import java.io.File
 import kotlin.collections.first
@@ -43,6 +44,35 @@ object DataLocal {
         R.drawable.ic_bookmark_selected,
         R.drawable.ic_saved_selected,
     )
+
+    fun getFilterList(): ArrayList<FilterModel> {
+        return arrayListOf(
+            FilterModel(R.drawable.ic_none_filter, name = "None", true),
+            FilterModel(R.drawable.img_filter_origin, name = "Black White"),
+            FilterModel(R.drawable.img_filter_origin, name = "Sepia Vintage"),
+            FilterModel(R.drawable.img_filter_origin, name = "Gray Scale"),
+            FilterModel(R.drawable.img_filter_origin, name = "Invert Color"),
+            FilterModel(R.drawable.img_filter_origin, name = "Bright Contrast"),
+            FilterModel(R.drawable.img_filter_origin, name = "Overexposed"),
+            FilterModel(R.drawable.img_filter_origin, name = "RGB Swapped"),
+            FilterModel(R.drawable.img_filter_origin, name = "Warm Effect"),
+            FilterModel(R.drawable.img_filter_origin, name = "Cool Effect"),
+            FilterModel(R.drawable.img_filter_origin, name = "Surreal"),
+            FilterModel(R.drawable.img_filter_origin, name = "Subtle Tone"),
+            FilterModel(R.drawable.img_filter_origin, name = "Purple Tint"),
+            FilterModel(R.drawable.img_filter_origin, name = "Yellow Green"),
+            FilterModel(R.drawable.img_filter_origin, name = "Cyan Glow"),
+            FilterModel(R.drawable.img_filter_origin, name = "High Contrast"),
+            FilterModel(R.drawable.img_filter_origin, name = "Vintage Fade"),
+            FilterModel(R.drawable.img_filter_origin, name = "Icy Blue"),
+            FilterModel(R.drawable.img_filter_origin, name = "Rich Sepia"),
+            FilterModel(R.drawable.img_filter_origin, name = "Milky Tone"),
+            FilterModel(R.drawable.img_filter_origin, name = "Green Highlight"),
+            FilterModel(R.drawable.img_filter_origin, name = "Soft Peach"),
+            FilterModel(R.drawable.img_filter_origin, name = "Light Boost"),
+            FilterModel(R.drawable.img_filter_origin, name = "Dark Boost"),
+        )
+    }
 
     fun getAllImageFoldersWithImages(context: Context): ArrayList<AllImageModel> {
         val folderMap = mutableMapOf<String, ArrayList<ImageModel>>()

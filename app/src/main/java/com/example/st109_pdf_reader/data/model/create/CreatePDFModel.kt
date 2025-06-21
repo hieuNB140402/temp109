@@ -1,3 +1,7 @@
 package com.example.st109_pdf_reader.data.model.create
 
-data class CreatePDFModel(var path: String, var isSelected: Boolean = false)
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class CreatePDFModel(var path: String, var isSelected: Boolean = false) : Parcelable

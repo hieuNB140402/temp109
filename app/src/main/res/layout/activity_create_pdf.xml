@@ -20,6 +20,7 @@
             layout="@layout/layout_actionbar" />
     </FrameLayout>
 
+    <!-- rcvImage -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rcvImage"
         android:layout_width="match_parent"

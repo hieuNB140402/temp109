@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.view.LayoutInflater
+import androidx.activity.viewModels
+import com.artifex.mupdfdemo.Annotation
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
 import com.example.st109_pdf_reader.core.extensions.eLog
@@ -20,11 +22,13 @@ import com.artifex.mupdfdemo.Hit
 import com.artifex.mupdfdemo.MuPDFCore
 import com.artifex.mupdfdemo.MuPDFPageAdapter
 import com.artifex.mupdfdemo.MuPDFReaderView
+import com.artifex.mupdfdemo.MuPDFView
 import com.artifex.mupdfdemo.SearchTask
 import com.artifex.mupdfdemo.SearchTaskResult
 import com.example.st109_pdf_reader.core.extensions.createBimapFromView
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
+import com.example.st109_pdf_reader.core.extensions.showToast
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
@@ -36,28 +40,21 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSupport,
-    TextToSpeech.OnInitListener {
+class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSupport, TextToSpeech.OnInitListener {
 
-    //    private val viewmodel: EditViewModel by viewModels()
     private var core: MuPDFCore? = null
     private var mDocView: MuPDFReaderView? = null
     private var mSearchTask: SearchTask? = null
 
     enum class AcceptMode {
-        Highlight,
-        Underline,
-        StrikeOut,
-        Draw,
-        CopyText,
-        Eraser,
+        Highlight, Underline, StrikeOut, Draw, CopyText, Eraser
     }
 
     private lateinit var textToSpeech: TextToSpeech
     private var textList: List<String> = listOf()
     private var currentIndex = 0
     private var isPaused = false
-
+    private var isCreate = false
     override fun setViewBinding(): ActivityPdfBinding {
         return ActivityPdfBinding.inflate(LayoutInflater.from(this))
     }
@@ -70,6 +67,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         binding.apply {
             actionBar.apply {
                 btnActionBarLeft.setOnSingleClick { handleBackLeftToRight() }
+                btnActionBarRight.setOnSingleClick { onSaveOption(AcceptMode.Draw) }
             }
             btnSpeech.setOnSingleClick {
                 handleSpeech()
@@ -99,6 +97,13 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     private fun initData() {
         val file = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)
+        isCreate = intent.getBooleanExtra(KeyApp.KeyIntent.CREATE_KEY, false)
+
+        if (isCreate) {
+            binding.btnSpeech.setImageResource(R.drawable.ic_edit)
+            binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_save_create)
+        }
+
         try {
             binding.actionBar.tvCenter.text = file!!.name
             core = openFileX(file.path)
@@ -112,6 +117,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             createUI()
             core?.canProof()
             textToSpeech = TextToSpeech(this, this)
+
         } catch (e: Exception) {
             eLog("initData: ${e.message}")
         }
@@ -211,20 +217,24 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
     }
 
     private fun handleSpeech() {
-        CoroutineScope(Job() + Dispatchers.IO).launch {
-            var bitmap: Bitmap? = null
-            val job1 = async {
-                bitmap = createBimapFromView(binding.rlViewPdf)
-                return@async true
-            }
-            launch(Dispatchers.Main) {
-                if (job1.await()) {
-                    recognizeTextFromBitmap(bitmap!!) { text ->
-                        dLog("text: $text")
-                        speakText(text)
+        if (!isCreate) {
+            CoroutineScope(Job() + Dispatchers.IO).launch {
+                var bitmap: Bitmap? = null
+                val job1 = async {
+                    bitmap = createBimapFromView(binding.rlViewPdf)
+                    return@async true
+                }
+                launch(Dispatchers.Main) {
+                    if (job1.await()) {
+                        recognizeTextFromBitmap(bitmap!!) { text ->
+                            dLog("text: $text")
+                            speakText(text)
+                        }
                     }
                 }
             }
+        } else {
+            handleEdit()
         }
     }
 
@@ -255,7 +265,6 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         }
     }
 
-
     fun pauseTTS() {
         isPaused = true
         textToSpeech.stop()
@@ -266,6 +275,66 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         speakNext()
     }
 
+    private fun handleEdit() {
+        mDocView?.setMode(MuPDFReaderView.Mode.Drawing)
+    }
+
+    private fun onSaveOption(mode: AcceptMode) {
+        mDocView?.let {
+            val muPDFView = it.displayedView as MuPDFView
+            val isSuccess: Boolean
+
+            when (mode) {
+                AcceptMode.Highlight -> {
+                    isSuccess = muPDFView.markupSelection(com.artifex.mupdfdemo.Annotation.Type.HIGHLIGHT)
+                    if (!isSuccess) {
+                        showToast(getString(R.string.please_select_text))
+                    }
+                }
+
+                AcceptMode.Underline -> {
+                    isSuccess = muPDFView.markupSelection(com.artifex.mupdfdemo.Annotation.Type.UNDERLINE)
+                    if (!isSuccess) {
+                        showToast(getString(R.string.please_select_text))
+                    }
+                }
+
+                AcceptMode.StrikeOut -> {
+                    isSuccess = muPDFView.markupSelection(Annotation.Type.STRIKEOUT)
+                    if (!isSuccess) {
+                        showToast(getString(R.string.please_select_text))
+                    }
+                }
+
+                AcceptMode.Draw -> {
+                    isSuccess = muPDFView.saveDraw()
+                    if (!isSuccess) {
+                        showToast(getString(R.string.please_draw_anything))
+                    } else {
+//                        viewmodel.setStateUseDraw()
+                        mDocView?.setMode(MuPDFReaderView.Mode.Viewing)
+                    }
+                }
+
+                AcceptMode.CopyText -> {
+                    isSuccess = muPDFView.copySelection()
+                    if (isSuccess) {
+                        showToast(getString(R.string.copied_to_clipboard))
+                    } else {
+                        showToast(getString(R.string.please_select_text))
+                    }
+                }
+
+                AcceptMode.Eraser -> {
+                    isSuccess = true
+                    muPDFView.deleteSelectedAnnotation()
+                }
+
+            }
+
+            if (isSuccess) it.refresh(false)
+        } ?: showToast("Cannot edit files")
+    }
 
     override fun onDestroy() {
         super.onDestroy()

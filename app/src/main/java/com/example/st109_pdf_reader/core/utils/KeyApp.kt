@@ -2,7 +2,8 @@ package com.example.st109_pdf_reader.core.utils
 
 object KeyApp {
     const val DOWNLOAD_ALBUM = "Couple Creator"
-    const val DOWNLOAD_ALBUM_BACKGROUND = "Image Background"
+    const val TEMP_IMAGE_FILTER = "Image Background"
+    const val FOLDER_CREATE_PDF = "My PDF"
 
 
     const val ALL_FILE = "ALL"
@@ -20,6 +21,7 @@ object KeyApp {
         const val PATH_KEY = "PATH_KEY"
         const val STATUS_KEY = "STATUS_KEY"
         const val FROM_SETTINGS = "FROM_SETTINGS"
+        const val CREATE_KEY = "CREATE_KEY"
     }
 
     object KeySharePreference {

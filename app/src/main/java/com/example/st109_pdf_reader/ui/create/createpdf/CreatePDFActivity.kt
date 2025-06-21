@@ -1,6 +1,5 @@
 package com.example.st109_pdf_reader.ui.create.createpdf
 
-import android.R.attr.bitmap
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
@@ -13,18 +12,25 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
-import com.example.st109_pdf_reader.core.extensions.createBimapFromView
+import com.example.st109_pdf_reader.core.extensions.convertPathsToBitmaps
+import com.example.st109_pdf_reader.core.extensions.createPdfFromBitmaps
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.eLog
+import com.example.st109_pdf_reader.core.extensions.generateRandomString
+import com.example.st109_pdf_reader.core.extensions.handleBackLeftToRight
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.saveBitmapToInternalStorage
 import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
+import com.example.st109_pdf_reader.core.extensions.showToast
+import com.example.st109_pdf_reader.core.extensions.startIntentFromLeft
 import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.KeyApp.DOWNLOAD_ALBUM
 import com.example.st109_pdf_reader.data.model.create.CreatePDFModel
 import com.example.st109_pdf_reader.databinding.ActivityCreatePdfBinding
+import com.example.st109_pdf_reader.ui.create.filter.FilterActivity
 import com.example.st109_pdf_reader.ui.create.gallery.GalleryActivity
+import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import java.io.File
 import java.util.UUID
 import kotlin.jvm.java
@@ -32,10 +38,10 @@ import com.yalantis.ucrop.UCrop
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
 
 class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
     private val imageAdapter by lazy {
@@ -46,13 +52,10 @@ class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
     private var pathSelected = ""
 
     val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(
-        ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT,
-        0
+        ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT, 0
     ) {
         override fun onMove(
-            recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            target: RecyclerView.ViewHolder
+            recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder
         ): Boolean {
             val fromPosition = viewHolder.adapterPosition
             val toPosition = target.adapterPosition
@@ -78,9 +81,21 @@ class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val data = result.data
                 val newPath = data?.getStringExtra(KeyApp.KeyIntent.INTENT_KEY)
-                val positionSelected = imageList.indexOfFirst { it.isSelected == true }
-                imageList[positionSelected].path = newPath!!
+                imageList[choosePositionSelected()].path = newPath!!
                 submitAdapter()
+            }
+        }
+
+    private val setFilterSuccess =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val data = result.data
+                val newList = data?.getParcelableArrayListExtra<CreatePDFModel>(KeyApp.KeyIntent.INTENT_KEY)
+                imageList.clear()
+                imageList.addAll(newList!!)
+                imageList.forEach { it.isSelected = false }
+                imageList[choosePositionSelected()].isSelected = true
+                imageAdapter.submitList(imageList)
             }
         }
 
@@ -94,8 +109,14 @@ class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
 
     override fun viewListener() {
         binding.apply {
+            actionBar.apply {
+                btnActionBarLeft.setOnSingleClick { handleBackLeftToRight() }
+                btnActionBarRight.setOnSingleClick { handleSave() }
+            }
             btnReplace.setOnSingleClick { handleReplace() }
             btnCutout.setOnSingleClick { handleCutout() }
+            btnFilter.setOnSingleClick { handleFilter() }
+            btnDelete.setOnSingleClick { handleDelete() }
         }
         handleRcv()
     }
@@ -116,8 +137,7 @@ class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
     }
 
     private fun initData() {
-        val getListPathImage: ArrayList<String>? =
-            intent.getStringArrayListExtra(KeyApp.KeyIntent.INTENT_KEY)
+        val getListPathImage: ArrayList<String>? = intent.getStringArrayListExtra(KeyApp.KeyIntent.INTENT_KEY)
         getListPathImage?.let {
             it.forEach { path ->
                 imageList.add(CreatePDFModel(path))
@@ -138,6 +158,8 @@ class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
 
         submitAdapter()
     }
+
+    private fun choosePositionSelected(): Int = imageList.indexOfFirst { it.isSelected == true }
 
     private fun submitAdapter() {
         imageAdapter.submitList(imageList)
@@ -234,6 +256,50 @@ class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
                 }
             }
         }
+
+    }
+
+    private fun handleFilter() {
+        val intent = Intent(this, FilterActivity::class.java)
+        intent.putParcelableArrayListExtra(KeyApp.KeyIntent.INTENT_KEY, imageList)
+        setFilterSuccess.launch(intent)
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+    }
+
+    private fun handleDelete() {
+        imageList.removeAt(choosePositionSelected())
+        if (imageList.isEmpty()) {
+            handleBackLeftToRight()
+        } else {
+            imageList.first().isSelected = true
+            submitAdapter()
+        }
+    }
+
+    private fun handleSave() {
+        CoroutineScope(Job() + Dispatchers.IO).launch {
+            val differ = async {
+                val bitmapOriginList = ArrayList<Bitmap>()
+                val pathList = ArrayList<String>()
+                imageList.forEach { pathList.add(it.path) }
+                bitmapOriginList.addAll(convertPathsToBitmaps(this@CreatePDFActivity, pathList))
+                val path = createPdfFromBitmaps(bitmapOriginList, generateRandomString())
+                return@async path
+            }
+            launch(Dispatchers.Main) {
+                if (differ.await() != "") {
+                    dLog("path: ${differ.await()}")
+                    val intent = Intent(this@CreatePDFActivity, PdfActivity::class.java).apply {
+                        putExtra(KeyApp.KeyIntent.INTENT_KEY, differ.await())
+                        putExtra(KeyApp.KeyIntent.CREATE_KEY, true)
+                    }
+                    startActivity(intent)
+                    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                }
+
+            }
+        }
+
 
     }
 }

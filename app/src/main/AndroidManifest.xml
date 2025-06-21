@@ -27,9 +27,11 @@
         android:theme="@style/Theme.ST109_PDF_Reader"
         tools:targetApi="31">
         <activity
+            android:name=".ui.create.filter.FilterActivity"
+            android:exported="false" />
+        <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.create.createpdf.CreatePDFActivity"
             android:exported="false" />

@@ -56,9 +56,6 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
         initText()
         initActionBar()
         initAds()
-
-
-
     }
 
     override fun onResume() {

@@ -23,6 +23,8 @@ import com.example.st109_pdf_reader.core.extensions.animateLift
 import com.example.st109_pdf_reader.core.extensions.backFragmentSlideInFromLeft
 import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.dLog
+import com.example.st109_pdf_reader.core.extensions.deleteTempDataFolder
+import com.example.st109_pdf_reader.core.extensions.getImageInternal
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.select
@@ -54,8 +56,10 @@ import com.example.st109_pdf_reader.ui.home.fragment.SearchFragment
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModel
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModelFactory
 import com.example.st109_pdf_reader.ui.language.LanguageActivity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 import kotlin.system.exitProcess
 
 class HomeActivity : BaseActivity<ActivityHomeBinding>() {
@@ -77,6 +81,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         initList()
         initRate()
         countAccess()
+        deleteTempDataFolder(this, KeyApp.TEMP_IMAGE_FILTER)
         checkPermissionToInit()
     }
 
@@ -97,8 +102,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             val dao = AppDatabase.getInstance(this).fileDao()
             val repository = FileRepository(dao)
 
-            fileViewModel =
-                ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
+            fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
             fileViewModel.scanIfFirstTime(this)
 
             lifecycleScope.launch {
@@ -270,7 +274,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
 
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
-        if (!isFragmentOther){
+        if (!isFragmentOther) {
             if (!SystemUtils.getIsRate(this) && SystemUtils.getCountBack(this) % 2 == 0) {
                 val dialogRate = RateDialog(this)
                 SystemUtils.setLocale(this)
@@ -278,8 +282,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
                 dialogRate.apply {
                     onRateLess3 = {
                         SystemUtils.setIsRate(this@HomeActivity, true)
-                        Toast.makeText(this@HomeActivity, R.string.have_rated, Toast.LENGTH_SHORT)
-                            .show()
+                        Toast.makeText(this@HomeActivity, R.string.have_rated, Toast.LENGTH_SHORT).show()
                         val handler = Handler()
                         handler.postDelayed({
                             dialogRate.dismiss()
@@ -299,13 +302,12 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             } else {
                 exitProcess(0)
             }
-        }else{
+        } else {
             backFragmentSlideInFromLeft(binding.containerFragment) {
                 supportFragmentManager.popBackStack()
             }
             isFragmentOther = false
         }
-
     }
 
     override fun onRestart() {
@@ -325,16 +327,14 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         startFragmentSlideInFromRight(binding.containerFragment)
 
         fragment.let {
-            supportFragmentManager.beginTransaction()
-                .replace(binding.containerFragment.id, fragment).addToBackStack(null).commit()
+            supportFragmentManager.beginTransaction().replace(binding.containerFragment.id, fragment)
+                .addToBackStack(null).commit()
         }
         isFragmentOther = true
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == STORAGE_PERMISSION_CODE) {
@@ -345,4 +345,6 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             }
         }
     }
+
+
 }

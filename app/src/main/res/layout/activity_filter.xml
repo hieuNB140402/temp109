@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.create.filter.FilterActivity">
+    <!-- layoutActionBar -->
+    <FrameLayout
+        android:id="@+id/layoutActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/actionBar"
+            layout="@layout/layout_actionbar" />
+    </FrameLayout>
+
+    <!-- vpgPage -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vpgPage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingHorizontal="80dp"
+        android:paddingTop="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutPage"
+        app:layout_constraintTop_toBottomOf="@id/layoutActionBar" />
+
+    <!-- layoutPage -->
+    <LinearLayout
+        android:id="@+id/layoutPage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_100_solid_black_opacity"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="5"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- btnPre -->
+        <FrameLayout
+            android:id="@+id/btnPre"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/imvPre"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_pre" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3">
+
+            <TextView
+                android:id="@+id/tvPage"
+                style="@style/single_marquee"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/roboto_medium"
+                android:gravity="center"
+                android:text="1/15"
+                android:textColor="@color/white"
+                android:textSize="14sp" />
+        </FrameLayout>
+
+        <!-- btnNext -->
+        <FrameLayout
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="6dp"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/imvNext"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:rotationY="180"
+                android:src="@drawable/ic_pre_selected" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- viewShadow -->
+    <View
+        android:id="@+id/viewShadow"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="-34dp"
+        android:background="@drawable/bg_gragient_shadow"
+        app:layout_constraintTop_toTopOf="@+id/layoutBottom" />
+
+    <!-- layoutBottom -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_28_top_solid_f3"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <!-- tvTitle -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:fontFamily="@font/roboto_medium"
+            android:gravity="center"
+            android:text="@string/filter"
+            android:textColor="@color/black_2D"
+            android:textSize="16sp"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- swApplyAll -->
+        <ImageView
+            android:id="@+id/swApplyAll"
+            android:layout_width="36dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_sw_off_filter"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:fontFamily="@font/roboto_regular"
+            android:gravity="end|center_vertical"
+            android:text="@string/apply_for_all_page"
+            android:textColor="@color/black_2D"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@+id/swApplyAll"
+            app:layout_constraintEnd_toStartOf="@+id/swApplyAll"
+            app:layout_constraintTop_toTopOf="@+id/swApplyAll" />
+
+        <!-- rcvFilter -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcvFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/swApplyAll"
+            tools:listitem="@layout/item_filter" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

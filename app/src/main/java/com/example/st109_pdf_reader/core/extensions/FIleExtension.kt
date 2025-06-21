@@ -1,12 +1,16 @@
 package com.example.st109_pdf_reader.core.extensions
 
+import android.R.attr.path
 import android.app.Activity
 import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -14,16 +18,24 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.internal.utils.ImageUtil.rotateBitmap
 import androidx.documentfile.provider.DocumentFile
+import androidx.exifinterface.media.ExifInterface
+import androidx.lifecycle.lifecycleScope
+import com.document.allreader.allofficefilereader.utils.FileUtils.context
 import com.example.st109_pdf_reader.R
+import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.KeyApp.DOWNLOAD_ALBUM
 import com.example.st109_pdf_reader.core.utils.KeyApp.RequestCode.PICK_IMAGE_REQUEST_CODE
+import com.example.st109_pdf_reader.ui.home.HomeActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-
 
 internal fun Activity.openImagePicker() {
     val intent = Intent(Intent.ACTION_PICK)
@@ -47,8 +59,7 @@ internal fun Activity.saveBitmapToExternalStorage(bitmap: Bitmap) {
             put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/$DOWNLOAD_ALBUM")
         } else {
             val directory = File(
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                DOWNLOAD_ALBUM
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), DOWNLOAD_ALBUM
             )
             if (!directory.exists()) {
                 directory.mkdirs()
@@ -173,31 +184,6 @@ internal fun createBimapFromView(view: View): Bitmap {
     }
 }
 
-
-//fun setDiamondToFile(context: Context, list: ArrayList<DiamondModel>) {
-//    try {
-//        val json = Gson().toJson(list)
-//        context.openFileOutput(DIAMOND_FILE, Context.MODE_PRIVATE).use { output ->
-//            output.write(json.toByteArray())
-//        }
-//    } catch (e: Exception) {
-//        e.printStackTrace()
-//    }
-//}
-//
-//fun getDiamondFromFile(context: Context): ArrayList<DiamondModel> {
-//    return try {
-//        val file = context.getFileStreamPath(DIAMOND_FILE)
-//        if (!file.exists()) return arrayListOf()
-//
-//        val json = context.openFileInput(DIAMOND_FILE).bufferedReader().use { it.readText() }
-//        val type = object : TypeToken<ArrayList<DiamondModel>>() {}.type
-//        Gson().fromJson(json, type) ?: arrayListOf()
-//    } catch (e: Exception) {
-//        e.printStackTrace()
-//        arrayListOf()
-//    }
-//}
 fun Activity.getFilePathFromUri(uri: Uri): String? {
     var filePath: String? = null
     var inputStream: InputStream? = null
@@ -271,5 +257,99 @@ fun sortAsset(listFiles: Array<String>?): List<String>? {
         matchResult?.value?.toIntOrNull() ?: Int.MAX_VALUE
     })
     return sortedFiles
+}
+
+fun uriToBitmap(context: Context, uri: Uri): Bitmap? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(uri)
+        BitmapFactory.decodeStream(inputStream).also {
+            Log.d("nbhieu", "uriToBitmap: success")
+            inputStream?.close()
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        Log.e("nbhieu", "uriToBitmap: ${e.message}")
+        null
+    }
+}
+
+fun convertPathsToBitmaps(context: Context, paths: List<String>): List<Bitmap> {
+    val bitmaps = mutableListOf<Bitmap>()
+    paths.forEachIndexed { index, path ->
+        val uri = Uri.fromFile(File(path))
+        var bitmap = uriToBitmap(context, uri)
+        if (bitmap != null) {
+            val exif = ExifInterface(path)
+            val orientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL
+            )
+
+            if (orientation != ExifInterface.ORIENTATION_ROTATE_90 && orientation != ExifInterface.ORIENTATION_ROTATE_180 && orientation != ExifInterface.ORIENTATION_ROTATE_270) {
+                bitmaps.add(bitmap)
+            } else {
+                bitmap = when (orientation) {
+                    ExifInterface.ORIENTATION_ROTATE_90 -> rotateBitmap(bitmap, 90f)
+                    ExifInterface.ORIENTATION_ROTATE_180 -> rotateBitmap(bitmap, 180f)
+                    ExifInterface.ORIENTATION_ROTATE_270 -> rotateBitmap(bitmap, 270f)
+                    else -> bitmap
+                }
+
+                bitmaps.add(bitmap)
+            }
+
+        }
+    }
+    return bitmaps
+}
+
+fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
+    val matrix = Matrix()
+    matrix.postRotate(degrees)
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+}
+
+fun AppCompatActivity.deleteTempDataFolder(context: Context, folder: String) {
+    lifecycleScope.launch(Dispatchers.IO) {
+        val dataTemp = getImageInternal(context, folder)
+        if (dataTemp.isNotEmpty()) {
+            dataTemp.forEach {
+                val file = File(it)
+                file.delete()
+            }
+        }
+    }
+}
+
+fun createPdfFromBitmaps(bitmapList: ArrayList<Bitmap>, outputFileName: String): String? {
+    val pdfDocument = PdfDocument()
+
+    bitmapList.forEachIndexed { index, bitmap ->
+        val pageInfo = PdfDocument.PageInfo.Builder(bitmap.width, bitmap.height, index + 1).create()
+        val page = pdfDocument.startPage(pageInfo)
+        val canvas = page.canvas
+
+        canvas.drawBitmap(bitmap, 0f, 0f, null)
+
+        pdfDocument.finishPage(page)
+    }
+
+    return try {
+        val pdfDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), KeyApp.FOLDER_CREATE_PDF)
+        if (!pdfDir.exists()) pdfDir.mkdirs()
+
+        val file = File(pdfDir, "$outputFileName.pdf")
+        val outputStream = FileOutputStream(file)
+
+        pdfDocument.writeTo(outputStream)
+
+        pdfDocument.close()
+        outputStream.close()
+
+        file.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        pdfDocument.close()
+        null
+    }
 }
 

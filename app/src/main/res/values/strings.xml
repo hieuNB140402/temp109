@@ -122,4 +122,9 @@
     <string name="cutout">Cutout</string>
     <string name="filter">Filter</string>
     <string name="create_pdf">Create PDF</string>
+    <string name="apply_for_all_page">Apply for all page</string>
+
+    <string name="please_select_text">Please select text!</string>
+    <string name="please_draw_anything">Please draw anything!</string>
+    <string name="copied_to_clipboard">Copied to clipboard!</string>
 </resources>
