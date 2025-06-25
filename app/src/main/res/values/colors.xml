@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="black_24">#242424</color>
+    <color name="black_2D">#2D2D2D</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00868686</color>
+    <color name="busy_indicator">#c0202020</color>
+    <color name="red_start">#F52C2C</color>
+    <color name="red_end">#B10C0C</color>
+    <color name="gray_AA">#AAAAAA</color>
+    <color name="pdf">#A00000</color>
+    <color name="excel">#21A366</color>
+    <color name="word">#2C7CD5</color>
+    <color name="ppt">#D35330</color>
+    <color name="gray_CE">#CECECE</color>
+    <color name="gray_CA">#CACACA</color>
+    <color name="gray_A7">#A7A7A7</color>
+</resources>

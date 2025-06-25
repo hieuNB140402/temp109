@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.create.createpdf.CreatePDFActivity">
+
+    <!-- layoutActionBar -->
+    <FrameLayout
+        android:id="@+id/layoutActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/actionBar"
+            layout="@layout/layout_actionbar" />
+    </FrameLayout>
+
+    <!-- rcvImage -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcvImage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:paddingHorizontal="12dp"
+        tools:listitem="@layout/item_create_pdf"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBottom"
+        app:layout_constraintTop_toBottomOf="@id/layoutActionBar"
+        app:spanCount="3" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:background="@drawable/bg_gragient_shadow"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBottom" />
+
+    <!-- layoutBottom -->
+    <LinearLayout
+        android:id="@+id/layoutBottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:weightSum="4"
+        app:layout_constraintBottom_toBottomOf="parent">
+        <!-- btnReplace -->
+        <LinearLayout
+            android:id="@+id/btnReplace"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginBottom="8dp"
+                android:src="@drawable/ic_replay" />
+
+            <TextView
+                style="@style/single_marquee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="8dp"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center_horizontal"
+                android:text="@string/replace"
+                android:textColor="@color/black_2D"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- btnCutout -->
+        <LinearLayout
+            android:id="@+id/btnCutout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginBottom="8dp"
+                android:src="@drawable/ic_cutout" />
+
+            <TextView
+                style="@style/single_marquee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="8dp"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center_horizontal"
+                android:text="@string/cutout"
+                android:textColor="@color/black_2D"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- btnFilter -->
+        <LinearLayout
+            android:id="@+id/btnFilter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginBottom="8dp"
+                android:src="@drawable/ic_filer" />
+
+            <TextView
+                style="@style/single_marquee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="8dp"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center_horizontal"
+                android:text="@string/filter"
+                android:textColor="@color/black_2D"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- btnDelete -->
+        <LinearLayout
+            android:id="@+id/btnDelete"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="12dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginBottom="8dp"
+                android:src="@drawable/ic_delete_create" />
+
+            <TextView
+                style="@style/single_marquee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginHorizontal="8dp"
+                android:fontFamily="@font/roboto_regular"
+                android:gravity="center_horizontal"
+                android:text="@string/delete"
+                android:textColor="@color/black_2D"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

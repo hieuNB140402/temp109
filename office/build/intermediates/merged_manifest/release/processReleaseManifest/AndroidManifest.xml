@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.document.allreader.allofficefilereader" >
+
+    <uses-sdk android:minSdkVersion="21" />
+
+    <application
+        android:allowBackup="true"
+        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+        android:hardwareAccelerated="true"
+        android:largeHeap="true"
+        android:requestLegacyExternalStorage="true"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true" >
+
+        <!-- <activity -->
+        <!-- android:exported="true" -->
+        <!-- android:name="com.allreader.office.allofficefilereader.activities.ActivitySplash" -->
+        <!-- android:hardwareAccelerated="true"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.MAIN" /> -->
+        <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+        <!-- </intent-filter> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name=".SplashActivity" /> -->
+        <!-- <category android:name="android.intent.category.DEFAULT" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
+
+
+        <!-- <activity -->
+        <!-- android:exported="true" -->
+        <!-- android:name="com.allreader.office.allofficefilereader.pdfViewerModule.PdfViewer" -->
+        <!-- android:theme="@style/AppTheme.TitleBar"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.VIEW" /> -->
+
+
+        <!-- <category android:name="android.intent.category.BROWSABLE" /> -->
+        <!-- <category android:name="android.intent.category.DEFAULT" /> -->
+
+
+        <!-- <data android:scheme="http" /> -->
+        <!-- <data android:scheme="content" /> -->
+        <!-- <data android:scheme="file" /> -->
+        <!-- <data android:mimeType="application/pdf" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
+        <!-- <activity -->
+        <!-- android:name="com.allreader.office.allofficefilereader.activities.ActivityFilesHolder" -->
+        <!-- android:hardwareAccelerated="true" /> -->
+        <!-- <activity -->
+        <!-- android:name="com.allreader.office.allofficefilereader.activities.MainActivity" -->
+        <!-- android:hardwareAccelerated="true" /> -->
+
+        <meta-data
+            android:name="android.webkit.WebView.MetricsOptOut"
+            android:value="true" />
+        <meta-data
+            android:name="android.webkit.WebView.EnableSafeBrowsing"
+            android:value="false" />
+
+        <!-- <provider -->
+        <!-- android:name="androidx.core.content.FileProvider" -->
+        <!-- android:authorities="com.allreader.office.allofficefilereader.provider" -->
+        <!-- android:exported="false" -->
+        <!-- android:grantUriPermissions="true"> -->
+        <!-- <meta-data -->
+        <!-- android:name="android.support.FILE_PROVIDER_PATHS" -->
+        <!-- android:resource="@xml/provider_paths" /> -->
+        <!-- </provider> -->
+
+        <receiver android:name="com.document.allreader.allofficefilereader.utils.Receiver" />
+
+        <activity
+            android:name="com.google.android.play.core.missingsplits.PlayCoreMissingSplitsActivity"
+            android:enabled="false"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:process=":playcore_missing_splits_activity"
+            android:stateNotNeeded="true" />
+        <activity
+            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+            android:exported="false"
+            android:stateNotNeeded="true"
+            android:theme="@style/Theme.PlayCore.Transparent" />
+
+        <service
+            android:name="com.google.android.play.core.assetpacks.AssetPackExtractionService"
+            android:enabled="false"
+            android:exported="true" >
+            <meta-data
+                android:name="com.google.android.play.core.assetpacks.versionCode"
+                android:value="11002" />
+        </service>
+        <service
+            android:name="com.google.android.play.core.assetpacks.ExtractionForegroundService"
+            android:enabled="false"
+            android:exported="false" />
+
+        <!-- pdf_craetor -->
+
+        <activity
+            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Base.Theme.AppCompat" />
+        <!-- <activity android:name=".pdfcreator.activities.ActivityCropImage" /> -->
+
+
+        <!-- <activity -->
+        <!-- android:name=".pdfcreator.activities.ActivityImageEditor" -->
+        <!-- android:screenOrientation="portrait" /> -->
+        <!-- <activity -->
+        <!-- android:name=".pdfcreator.activities.ActivityPreview" -->
+        <!-- android:screenOrientation="portrait" /> -->
+        <!-- <activity -->
+        <!-- android:name=".pdfcreator.activities.ActivityRearrangeImages" -->
+        <!-- android:screenOrientation="portrait" /> -->
+        <!-- <activity -->
+        <!-- android:name=".pdfcreator.activities.ActivityImagesPreview" -->
+        <!-- android:screenOrientation="portrait" /> -->
+        <!-- <activity -->
+        <!-- android:name=".pdfcreator.activities.ActivityRearrangePdfPages" -->
+        <!-- android:screenOrientation="portrait" /> -->
+        <!-- <activity -->
+        <!-- android:name=".pdfcreator.activities.ActivityFavourites" -->
+        <!-- android:screenOrientation="portrait" /> -->
+
+
+        <!-- <activity -->
+        <!-- android:name=".pdfcreator.activities.SecondActivity" -->
+        <!-- android:screenOrientation="portrait" /> -->
+
+    </application>
+
+</manifest>

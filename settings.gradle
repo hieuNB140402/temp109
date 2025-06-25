@@ -1,0 +1,33 @@
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        maven { url "https://repository.aspose.com/repo/" }
+        maven { url 'https://jitpack.io' }
+        jcenter()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        maven { url "https://repository.aspose.com/repo/" }
+        maven { url 'https://jitpack.io' }
+        jcenter()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = "ST109_PDF_Reader"
+include ':app'
+include ':office'
+include ':mupdf'

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.pdf.PdfActivity">
+
+    <!-- layoutActionBar -->
+    <FrameLayout
+        android:id="@+id/layoutActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/actionBar"
+            layout="@layout/layout_actionbar" />
+    </FrameLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutActionBar">
+
+        <!-- rlViewPdf-->
+        <RelativeLayout
+            android:id="@+id/rl_view_pdf"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp">
+
+        </RelativeLayout>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="#80000000"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <!--            <LinearLayout-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="match_parent"-->
+            <!--                android:gravity="center_vertical"-->
+            <!--                android:orientation="horizontal"-->
+            <!--                android:paddingHorizontal="16dp">-->
+
+            <!--                <ImageView-->
+            <!--                    android:id="@+id/iv_search_page"-->
+            <!--                    android:layout_width="24dp"-->
+            <!--                    android:layout_height="24dp"-->
+            <!--                    android:layout_marginEnd="8dp"-->
+            <!--                    android:src="@drawable/ic_search_page" />-->
+
+            <!--                <TextView-->
+            <!--                    android:id="@+id/tv_count"-->
+            <!--                    android:layout_width="wrap_content"-->
+            <!--                    android:layout_height="match_parent"-->
+            <!--                    android:layout_gravity="center"-->
+            <!--                    android:fontFamily="@font/poppins_medium"-->
+            <!--                    android:gravity="center"-->
+            <!--                    android:text="1 of 99"-->
+            <!--                    android:textColor="@color/white"-->
+            <!--                    android:textSize="14sp" />-->
+            <!--            </LinearLayout>-->
+
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/tvHelpHighlight"
+        style="@style/single_marquee"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#9E9E9E"
+        android:fontFamily="@font/roboto_italic"
+        android:gravity="center"
+        android:paddingVertical="4dp"
+        android:text="@string/please_select_the_text_then_press_the_button_to_highlight"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@+id/layoutContent" />
+
+    <ImageView
+        android:id="@+id/btnSpeech"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_speech_on"
+        app:layout_constraintBottom_toTopOf="@+id/btnEdit"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/btnEdit"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_edit"
+        app:layout_constraintBottom_toTopOf="@+id/btnHighlight"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/btnHighlight"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_highlighting"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

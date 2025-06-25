@@ -1,0 +1,142 @@
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    id 'org.jetbrains.kotlin.plugin.parcelize'
+    id 'kotlin-kapt'
+    id 'kotlin-parcelize'
+    id 'com.google.dagger.hilt.android'
+}
+
+android {
+    namespace 'com.example.st109_pdf_reader'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.example.st109_pdf_reader"
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        def formattedDate = new Date().format('MM.dd.yyyy')
+        archivesBaseName = "ST109_PDF_Reader_v${versionName}_${formattedDate}"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+    dataBinding {
+        enabled true
+    }
+    buildFeatures {
+        viewBinding true
+    }
+    bundle {
+        language {
+            enableSplit = false
+        }
+        density {
+            enableSplit = true
+        }
+        abi {
+            enableSplit = true
+        }
+    }
+}
+
+dependencies {
+    implementation project(path: ':office')
+    implementation project(path: ':mupdf')
+
+    implementation libs.androidx.core.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.material
+    implementation libs.androidx.activity
+    implementation libs.androidx.constraintlayout
+    implementation libs.androidx.swiperefreshlayout
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.espresso.core
+
+    // review app
+    implementation("com.google.android.play:review-ktx:2.0.1")
+    // required to avoid crash on Android 12 API 31
+    implementation 'androidx.work:work-runtime-ktx:2.7.0'
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    // Blur Glide
+    implementation 'jp.wasabeef:glide-transformations:4.3.0'
+    // dots
+    implementation("com.tbuonomo:dotsindicator:5.0")
+    // CardView
+    implementation "androidx.cardview:cardview:1.0.0"
+    // rate
+    implementation 'com.github.ome450901:SimpleRatingBar:1.5.1'
+    // Lottie Animation
+    implementation 'com.airbnb.android:lottie:6.3.0'
+    // Shimmer
+    implementation 'com.facebook.shimmer:shimmer:0.5.0'
+    // EventBus
+    implementation 'org.greenrobot:eventbus:3.3.1'
+    // kotlin coroutines
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+    // Convert JSON
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    // Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+    // Vát cạnh
+    implementation 'com.google.android.material:material:1.12.0'
+    // Number picker
+    implementation 'io.github.ShawnLin013:number-picker:2.4.13'
+    // API
+    implementation retrofit_lib
+    implementation okhttp_lib
+    // Room
+    implementation("androidx.room:room-runtime:2.7.1")
+    kapt("androidx.room:room-compiler:2.7.1")
+    implementation "androidx.room:room-ktx:2.7.1"
+    // Optional: Room + Kotlin Coroutines
+    implementation "androidx.room:room-ktx:2.6.1"
+    // ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.0"
+    // LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.9.0"
+    //Lifecycle runtime (nếu dùng lifecycleScope)
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.9.0"
+    // ExoPlayer
+    implementation 'androidx.media3:media3-exoplayer:1.7.1'
+    // UI PlayerView
+    implementation 'androidx.media3:media3-ui:1.7.1'
+    // CameraX core libraries
+    implementation("androidx.camera:camera-core:1.4.2")
+    implementation("androidx.camera:camera-camera2:1.4.2")
+    implementation("androidx.camera:camera-lifecycle:1.4.2")
+    implementation "androidx.camera:camera-view:1.4.2"
+    // Number picker
+    implementation 'io.github.ShawnLin013:number-picker:2.4.13'
+    // image to text
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    // Dagger + Hilt
+    implementation "com.google.dagger:hilt-android:2.51"
+    kapt "com.google.dagger:hilt-compiler:2.51"
+    // Crop Image
+    implementation 'com.github.yalantis:ucrop:2.2.8'
+    // Image to text
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    // AndroidX
+    implementation 'androidx.exifinterface:exifinterface:1.4.1'
+
+    implementation "androidx.window:window:1.4.0"
+}

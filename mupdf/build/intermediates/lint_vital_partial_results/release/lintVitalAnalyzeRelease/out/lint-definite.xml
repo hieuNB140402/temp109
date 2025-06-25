@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.10.1" type="incidents">
+
+    <incident
+        id="NotSibling"
+        severity="fatal"
+        message="`@+id/pageSlider` is not a sibling in the same `RelativeLayout`">
+        <location
+            file="${:mupdf*release*MAIN*sourceProvider*0*resDir*0}/layout/buttons.xml"
+            line="379"
+            column="3"
+            startOffset="12823"
+            endLine="379"
+            endColumn="41"
+            endOffset="12861"/>
+    </incident>
+
+</incidents>

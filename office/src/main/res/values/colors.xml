@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+
+    <color name="colorPrimary">#03A9F4</color>
+    <color name="colorPrimaryDark">#3A74CD</color>
+    <color name="dot_light_screen1">#4080E1</color>
+    <color name="colorAccent">#3873CC</color>
+    <color name="bg">#F5F5F5</color>
+
+
+    <color name="white">#ffffff</color>
+    <color name="colorBLack">#000000</color>
+    <color name="colorControlNormal">#686868</color>
+    <color name="colorLanguageTxt">#666666</color>
+    <color name="colorOffWhite">#fffff9</color>
+
+    <color name="colorProgressBg1">#d1dbf8</color>
+    <color name="colorProgressStatus">#3762e0</color>
+    <color name="colorSkyBlue">#0084ff</color>
+    <color name="colorSplashNav">#1e2438</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="color_Red">#ff3600</color>
+    <color name="color_cardBg_allDoc_lower">#3762e0</color>
+    <color name="color_cardBg_allDoc_upper">#3762e0</color>
+    <color name="color_cardBg_htmlDoc_lower">#f9bdbd</color>
+    <color name="color_cardBg_htmlDoc_upper">#f860c7</color>
+    <color name="color_cardBg_pdfDoc_lower">#f98b8b</color>
+    <color name="color_cardBg_pdfDoc_upper">#fc4a4a</color>
+    <color name="color_cardBg_pptDoc_lower">#f87575</color>
+    <color name="color_cardBg_pptDoc_upper">#f93434</color>
+    <color name="color_cardBg_sheetDoc_lower">#fd48d4</color>
+    <color name="color_cardBg_sheetDoc_upper">#ff3989</color>
+    <color name="color_cardBg_txtDoc_lower">#fd47d0</color>
+    <color name="color_cardBg_txtDoc_upper">#ff3787</color>
+    <color name="color_cardBg_wordDoc_lower">#9977f6</color>
+    <color name="color_cardBg_wordDoc_upper">#7a8ef9</color>
+    <color name="color_cardBg_xmlDoc_lower">#9978f6</color>
+    <color name="color_cardBg_xmlDoc_upper">#7a8df9</color>
+
+
+<!--    pdf_creator-->
+    <color name="colorBlackAlt">#2B303B</color>
+    <color name="colorBlackAltLight">#3E4553</color>
+    <color name="colorBackground_black">#0A0808</color>
+
+    <color name="windowBackground_light">#F4F4F6</color>
+    <color name="windowBackground_dark">#33343B</color>
+    <color name="lighter_gray">#EDEDED</color>
+    <color name="dark_purple">#690339</color>
+    <color name="colorGray">#607D8B</color>
+    <color name="colorGrayRadio">#444444</color>
+
+    //White Colors
+    <color name="color_image_pdf">#5AC5CA</color>
+    <color name="color_text_pdf">#F27D59</color>
+    <color name="color_qr_pdf">#A58FFD</color>
+    <color name="color_excel_pdf">#6298EC</color>
+    <color name="light_gray">#d3d3d3</color>
+    <color name="grey">#9F9F9F</color>
+    <color name="red">#FF0000</color>
+
+    <color name="mhm_color_list_divider">#4B4E52</color>
+
+</resources>

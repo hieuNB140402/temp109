@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    tools:context=".ui.camera.CameraActivity">
+
+    <FrameLayout
+        android:id="@+id/layoutExport"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="3:4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <!-- cmrPreview -->
+        <androidx.camera.view.PreviewView
+            android:id="@+id/cmrPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:implementationMode="performance"
+            app:scaleType="fillCenter" />
+
+        <!-- imvImage -->
+        <ImageView
+            android:id="@+id/imvImageTest"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/layoutExport">
+        <!-- layoutActionBar -->
+        <FrameLayout
+            android:id="@+id/layoutActionBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/actionBar"
+                layout="@layout/layout_actionbar" />
+        </FrameLayout>
+    </FrameLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutBottom"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layoutExport">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imvImageShot"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="24dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintBottom_toBottomOf="@+id/imvRingOut"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/imvRingOut"
+            app:shapeAppearanceOverlay="@style/border_image_2" />
+
+        <TextView
+            android:id="@+id/tvCountImage"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="-12dp"
+            android:layout_marginBottom="-12dp"
+            android:background="@drawable/bg_1000_gradient_ver_red"
+            android:fontFamily="@font/roboto_medium"
+            android:gravity="center"
+            android:text="0"
+            android:textColor="@color/white"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/imvImageShot"
+            app:layout_constraintEnd_toEndOf="@+id/imvImageShot" />
+
+        <ImageView
+            android:id="@+id/imvRingOut"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginVertical="24dp"
+            android:src="@drawable/bg_ring_out"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/btnShot"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:src="@drawable/bg_1000_solid_white"
+            app:layout_constraintBottom_toBottomOf="@+id/imvRingOut"
+            app:layout_constraintEnd_toEndOf="@+id/imvRingOut"
+            app:layout_constraintStart_toStartOf="@+id/imvRingOut"
+            app:layout_constraintTop_toTopOf="@+id/imvRingOut" />
+
+        <ImageView
+            android:id="@+id/btnFlash"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_flash_off"
+            android:layout_marginEnd="49dp"
+            app:layout_constraintBottom_toBottomOf="@+id/imvRingOut"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/imvRingOut" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
