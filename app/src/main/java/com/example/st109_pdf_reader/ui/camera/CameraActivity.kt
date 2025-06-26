@@ -39,6 +39,7 @@ import com.example.st109_pdf_reader.core.dialog.LoadingDialog
 import com.example.st109_pdf_reader.core.extensions.animateScaleEffect
 import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.createBimapFromView
+import com.example.st109_pdf_reader.core.extensions.createPdfFromTextInternal
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.goToSettings
 import com.example.st109_pdf_reader.core.extensions.gone
@@ -49,6 +50,7 @@ import com.example.st109_pdf_reader.core.extensions.recognizeTextFromBitmap
 import com.example.st109_pdf_reader.core.extensions.requestPermission
 import com.example.st109_pdf_reader.core.extensions.saveBitmapToInternalStorage
 import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
+import com.example.st109_pdf_reader.core.extensions.showToast
 import com.example.st109_pdf_reader.core.extensions.startIntentFromLeft
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.KeyApp.RequestCode.CAMERA_PERMISSION_CODE
@@ -59,9 +61,12 @@ import com.example.st109_pdf_reader.core.utils.SystemUtils.getStoragePermission
 import com.example.st109_pdf_reader.core.utils.SystemUtils.setCameraPermission
 import com.example.st109_pdf_reader.ui.create.createpdf.CreatePDFActivity
 import com.example.st109_pdf_reader.ui.create.gallery.GalleryActivity
+import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlin.jvm.java
 
 class CameraActivity : BaseActivity<ActivityCameraBinding>() {
@@ -170,10 +175,7 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
         imageCapture?.targetRotation = binding.cmrPreview.display.rotation
 
         val imageCapture = imageCapture ?: return
-
-        // Hiển thị dialog loading nếu cần
-        val dialogLoading = LoadingDialog(this)
-        dialogLoading.show()
+        loadingDialog.show()
 
         // Capture ảnh
         imageCapture.takePicture(ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageCapturedCallback() {
@@ -191,39 +193,66 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
                 image.close() // Dóng ImageProxy
 
                 CoroutineScope(Dispatchers.IO).launch {
-                    var getText = ""
                     var currentPath = ""
                     try {
-                        if (!isScan){
+                        if (!isScan) {
                             currentPath = saveBitmapToInternalStorage(KeyApp.DOWNLOAD_ALBUM, bit).toString()
                             imageList.add(currentPath.toString())
-                        }else{
-                            recognizeTextFromBitmap(bit, { text ->
-                                getText = text
-                            })
                         }
 
 
                         launch(Dispatchers.Main) {
+                            binding.imvImageTest.setImageBitmap(null)
                             if (!isScan) {
-                                binding.imvImageTest.setImageBitmap(null)
 //                            binding.imvImageTest.rotationY = 0f
                                 countImage++
                                 binding.tvCountImage.text = countImage.toString()
                                 binding.tvCountImage.visible()
                                 loadImageGlide(this@CameraActivity, currentPath, binding.imvImageShot)
                                 binding.actionBar.btnActionBarTextRight.visible()
+                                loadingDialog.dismiss()
+                                hideNavigation()
                             } else {
-                                dLog("text: $getText")
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    val recognizedText = withContext(Dispatchers.IO) {
+                                        suspendCancellableCoroutine<String> { continuation ->
+                                            recognizeTextFromBitmap(bit) { text ->
+                                                continuation.resume(text) {}
+                                            }
+                                        }
+                                    }
+                                    dLog("recognizedText: $recognizedText")
+                                    if (recognizedText != "") {
+                                        val file = withContext(Dispatchers.IO) {
+                                            createPdfFromTextInternal(this@CameraActivity, recognizedText)
+                                        }
+                                        if (file != null) {
+                                            val intent = Intent(this@CameraActivity, PdfActivity::class.java).apply {
+                                                putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+                                                putExtra(KeyApp.KeyIntent.CREATE_KEY, true)
+                                            }
+                                            dismissLoading()
+                                            startActivity(intent)
+                                            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                                        } else {
+                                            dismissLoading()
+                                            showToast(getString(R.string.error_creating_file))
+                                        }
+                                    } else {
+                                        dismissLoading()
+                                        showToast(getString(R.string.unable_to_recognize_letters))
+                                    }
+
+                                }
+
                             }
 
-                            dialogLoading.dismiss()
-                            hideNavigation()
+
                         }
                     } catch (e: Exception) {
                         Log.e("nbhieu", "Lỗi lưu ảnh", e)
                         launch(Dispatchers.Main) {
-                            dialogLoading.dismiss()
+                            loadingDialog.dismiss()
                             hideNavigation()
                         }
                     }
@@ -232,7 +261,7 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
 
             override fun onError(exception: ImageCaptureException) {
                 super.onError(exception)
-                dialogLoading.dismiss()
+                loadingDialog.dismiss()
                 Log.e("nbhieu", "Lỗi chụp ảnh", exception)
             }
         })

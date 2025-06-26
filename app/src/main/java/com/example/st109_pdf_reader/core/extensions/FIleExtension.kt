@@ -2,6 +2,7 @@ package com.example.st109_pdf_reader.core.extensions
 
 import android.Manifest
 import android.R.attr.path
+import android.R.attr.text
 import android.app.Activity
 import android.content.ContentValues
 import android.content.ContentValues.TAG
@@ -11,7 +12,9 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Build
@@ -31,6 +34,7 @@ import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.KeyApp.DOWNLOAD_ALBUM
 import com.example.st109_pdf_reader.core.utils.KeyApp.RequestCode.PICK_IMAGE_REQUEST_CODE
+import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,6 +44,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.Random
 
 internal fun Activity.openImagePicker() {
     val intent = Intent(Intent.ACTION_PICK)
@@ -112,6 +117,7 @@ fun Activity.saveBitmapToInternalStorage(album: String, bitmap: Bitmap): String?
         null
     }
 }
+
 fun Activity.saveBitmapToInternalStorage(album: String, bitmap: Bitmap, nameInput: Int): String? {
     val name = nameInput.toString() + ".png"
 
@@ -482,6 +488,49 @@ fun Activity.copyFileToExternal(fileName: String, status: ((String, Boolean) -> 
     }
 }
 
+fun createPdfFromTextInternal(context: Context, text: String): FilesModel {
+    val fileName = generateRandomString()
+    val fileNameWithExtension = "$fileName.pdf"
 
+    val pdfDocument = PdfDocument()
 
+    // Kích thước trang PDF A4
+    val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
+    val page = pdfDocument.startPage(pageInfo)
+    val canvas: Canvas = page.canvas
 
+    // Vẽ nền trắng
+    canvas.drawColor(Color.WHITE)
+
+    // Vẽ nội dung text
+    val paint = Paint().apply {
+        color = Color.BLACK
+        textSize = 14f
+        isAntiAlias = true
+    }
+
+    val lines = text.split("\n")
+    var x = 40f
+    var y = 50f
+    val lineHeight = paint.descent() - paint.ascent()
+
+    for (line in lines) {
+        canvas.drawText(line, x, y, paint)
+        y += lineHeight + 10f
+    }
+
+    pdfDocument.finishPage(page)
+
+    // 🔸 Tạo file trong internal storage
+    val file = File(context.filesDir, "${KeyApp.FOLDER_CREATE_PDF}/${fileNameWithExtension}")
+    FileOutputStream(file).use { out ->
+        pdfDocument.writeTo(out)
+    }
+
+    pdfDocument.close()
+
+    return FilesModel(
+        kotlin.random.Random.nextInt(9999, 999999), KeyApp.PDF, fileName, file.absolutePath, file.length(), "", ""
+    )
+
+}

@@ -15,6 +15,15 @@ import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.data.model.create.*
 import com.example.st109_pdf_reader.databinding.ActivityGalleryBinding
 import com.example.st109_pdf_reader.ui.create.createpdf.CreatePDFActivity
+import com.example.st109_pdf_reader.ui.create.filter.FilterActivity
+import com.example.st109_pdf_reader.ui.pdf.PdfActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 
 class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
 
@@ -30,6 +39,7 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
     private var positionAllImage = 0
     private var isAllowPermission = false
     private var isReplace = false
+    private var isScan = false
 
     override fun setViewBinding() = ActivityGalleryBinding.inflate(LayoutInflater.from(this))
 
@@ -81,6 +91,8 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
             initRecyclerViews()
         }
         isReplace = intent.getStringExtra(KeyApp.KeyIntent.INTENT_KEY) != null
+        isScan = intent.getBooleanExtra(KeyApp.KeyIntent.SCAN_KEY, false)
+        dLog("isReplay: ${isReplace}\nisScan: ${isScan}")
     }
 
     private fun initRecyclerViews() = binding.apply {
@@ -110,7 +122,7 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
     }
 
     private fun onImageSelected(image: ImageModel, position: Int) = binding.apply {
-        if (!isReplace) {
+        if (!isReplace && !isScan) {
             adapterImageSub.submitItem(position, true)
             dataSelected.add(ImageSelectedModel(image.image, positionAllImage, position))
             adapterImageSelected.submitList(dataSelected)
@@ -121,11 +133,56 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
             layoutImageSelected.visible()
             btnDone.visible()
             viewShadow.visible()
-        } else {
+        } else if (isReplace && !isScan) {
             val resultIntent = Intent()
             resultIntent.putExtra(KeyApp.KeyIntent.INTENT_KEY, image.image)
             setResult(RESULT_OK, resultIntent)
             finish()
+        } else {
+            CoroutineScope(Dispatchers.Main).launch {
+                showLoading()
+
+                val bitmap = withContext(Dispatchers.IO) {
+                    convertPathsToBitmaps(this@GalleryActivity, listOf(image.image)).firstOrNull()
+                }
+
+                if (bitmap == null) {
+                    dismissLoading()
+                    showToast(getString(R.string.error_creating_file))
+                    return@launch
+                }
+
+                val recognizedText = withContext(Dispatchers.IO) {
+                    suspendCancellableCoroutine<String> { continuation ->
+                        recognizeTextFromBitmap(bitmap) { text ->
+                            continuation.resume(text) {}
+                        }
+                    }
+                }
+                dLog("recognizedText: $recognizedText")
+                if (recognizedText != "") {
+                    val file = withContext(Dispatchers.IO) {
+                        createPdfFromTextInternal(this@GalleryActivity, recognizedText)
+                    }
+
+                    if (file != null) {
+                        val intent = Intent(this@GalleryActivity, PdfActivity::class.java).apply {
+                            putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+                            putExtra(KeyApp.KeyIntent.CREATE_KEY, true)
+                        }
+                        dismissLoading()
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+                    } else {
+                        dismissLoading()
+                        showToast(getString(R.string.error_creating_file))
+                    }
+                } else {
+                    dismissLoading()
+                    showToast(getString(R.string.unable_to_recognize_letters))
+                }
+            }
+
         }
     }
 
@@ -215,8 +272,7 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
                 if (!checkPermissions(SystemUtils.storagePermission)) {
                     if (SystemUtils.getStoragePermission(this) < 2) {
                         requestPermission(
-                            SystemUtils.storagePermission,
-                            KeyApp.RequestCode.STORAGE_PERMISSION_CODE
+                            SystemUtils.storagePermission, KeyApp.RequestCode.STORAGE_PERMISSION_CODE
                         )
                     } else {
                         isAllowPermission = false

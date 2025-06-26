@@ -10,9 +10,11 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseFragment
+import com.example.st109_pdf_reader.core.dialog.ScanDialog
 import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.goToSettings
 import com.example.st109_pdf_reader.core.extensions.gone
+import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.requestPermission
 import com.example.st109_pdf_reader.core.extensions.setGradientTextHeightColor
 import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
@@ -56,8 +58,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     private var isShowPopup = false
     override fun setViewBinding(
-        inflater: LayoutInflater,
-        container: ViewGroup?
+        inflater: LayoutInflater, container: ViewGroup?
     ): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
     }
@@ -83,7 +84,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             isShowPopup = false
         }
         binding.btnGallery.setOnSingleClick { checkPermissionStorage() }
-        binding.btnCamera.setOnSingleClick { checkPermissionCamera()}
+        binding.btnCamera.setOnSingleClick { checkPermissionCamera() }
+        binding.btnCreate.setOnSingleClick { handleCreate() }
         handleRcv()
     }
 
@@ -112,8 +114,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
         fragment.let {
             requireActivity().supportFragmentManager.beginTransaction()
-                .replace(homeActivity.binding.containerFragment.id, fragment)
-                .addToBackStack(null).commit()
+                .replace(homeActivity.binding.containerFragment.id, fragment).addToBackStack(null).commit()
         }
 
         homeActivity.isFragmentOther = true
@@ -130,7 +131,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
     }
 
-    private fun checkPermissionStorage() {
+    private fun checkPermissionStorage(isScan: Boolean = false) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             if (!homeActivity.checkPermissions(storagePermission)) {
                 if (SystemUtils.getStoragePermission(homeActivity) >= 2) {
@@ -139,22 +140,34 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                     homeActivity.requestPermission(storagePermission, STORAGE_PERMISSION_CODE)
                 }
             } else {
-                homeActivity.startIntentFromLeft(GalleryActivity::class.java)
+                if (!isScan) {
+                    homeActivity.startIntentFromLeft(GalleryActivity::class.java)
+                } else {
+                    homeActivity.startIntentFromLeft(GalleryActivity::class.java, true)
+                }
             }
         } else {
-            homeActivity.startIntentFromLeft(GalleryActivity::class.java)
+            if (!isScan) {
+                homeActivity.startIntentFromLeft(GalleryActivity::class.java)
+            } else {
+                homeActivity.startIntentFromLeft(GalleryActivity::class.java, KeyApp.KeyIntent.SCAN_KEY, true)
+            }
         }
     }
 
-    private fun checkPermissionCamera() {
+    private fun checkPermissionCamera(isScan: Boolean = false) {
         if (!homeActivity.checkPermissions(cameraPermission)) {
             if (SystemUtils.getCameraPermission(homeActivity) < 2) {
                 homeActivity.requestPermission(cameraPermission, KeyApp.RequestCode.CAMERA_PERMISSION_CODE)
             } else {
                 homeActivity.goToSettings()
             }
-        }else{
-            homeActivity.startIntentFromLeft(CameraActivity::class.java)
+        } else {
+            if (!isScan) {
+                homeActivity.startIntentFromLeft(CameraActivity::class.java)
+            } else {
+                homeActivity.startIntentFromLeft(CameraActivity::class.java, true)
+            }
         }
     }
 
@@ -180,5 +193,25 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         isShowPopup = !isShowPopup
     }
 
+    private fun handleCreate() {
+        val dialogScan = ScanDialog(homeActivity)
+        SystemUtils.setLocale(homeActivity)
+        dialogScan.apply {
+            show()
+
+            onCameraClick = {
+                checkPermissionCamera(true)
+            }
+
+            onGalleryClick = {
+                checkPermissionStorage(true)
+            }
+            onDismissClick = {
+                dismiss()
+                homeActivity.hideNavigation()
+            }
+        }
+
+    }
 
 }

@@ -6,21 +6,21 @@
 6    <uses-sdk android:minSdkVersion="21" />
 7
 8    <application
-8-->D:\App\ST109\office\src\main\AndroidManifest.xml:6:5-146:19
+8-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:6:5-146:19
 9        android:allowBackup="true"
-9-->D:\App\ST109\office\src\main\AndroidManifest.xml:7:9-35
+9-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:7:9-35
 10        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-10-->D:\App\ST109\office\src\main\AndroidManifest.xml:8:9-77
+10-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:8:9-77
 11        android:hardwareAccelerated="true"
-11-->D:\App\ST109\office\src\main\AndroidManifest.xml:9:9-43
+11-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:9:9-43
 12        android:largeHeap="true"
-12-->D:\App\ST109\office\src\main\AndroidManifest.xml:10:9-33
+12-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:10:9-33
 13        android:requestLegacyExternalStorage="true"
-13-->D:\App\ST109\office\src\main\AndroidManifest.xml:11:9-52
+13-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:11:9-52
 14        android:supportsRtl="true"
-14-->D:\App\ST109\office\src\main\AndroidManifest.xml:12:9-35
+14-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:12:9-35
 15        android:usesCleartextTraffic="true" >
-15-->D:\App\ST109\office\src\main\AndroidManifest.xml:13:9-44
+15-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:13:9-44
 16
 17        <!-- <activity -->
 18        <!-- android:exported="true" -->
@@ -63,17 +63,17 @@
 55        <!-- android:hardwareAccelerated="true" /> -->
 56
 57        <meta-data
-57-->D:\App\ST109\office\src\main\AndroidManifest.xml:54:9-56:36
+57-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:54:9-56:36
 58            android:name="android.webkit.WebView.MetricsOptOut"
-58-->D:\App\ST109\office\src\main\AndroidManifest.xml:55:13-64
+58-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:55:13-64
 59            android:value="true" />
-59-->D:\App\ST109\office\src\main\AndroidManifest.xml:56:13-33
+59-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:56:13-33
 60        <meta-data
-60-->D:\App\ST109\office\src\main\AndroidManifest.xml:57:9-59:37
+60-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:57:9-59:37
 61            android:name="android.webkit.WebView.EnableSafeBrowsing"
-61-->D:\App\ST109\office\src\main\AndroidManifest.xml:58:13-69
+61-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:58:13-69
 62            android:value="false" />
-62-->D:\App\ST109\office\src\main\AndroidManifest.xml:59:13-34
+62-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:59:13-34
 63
 64        <!-- <provider -->
 65        <!-- android:name="androidx.core.content.FileProvider" -->
@@ -86,68 +86,68 @@
 72        <!-- </provider> -->
 73
 74        <receiver android:name="com.document.allreader.allofficefilereader.utils.Receiver" />
-74-->D:\App\ST109\office\src\main\AndroidManifest.xml:71:9-94
-74-->D:\App\ST109\office\src\main\AndroidManifest.xml:71:19-91
+74-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:71:9-94
+74-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:71:19-91
 75
 76        <activity
-76-->D:\App\ST109\office\src\main\AndroidManifest.xml:73:9-79:45
+76-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:73:9-79:45
 77            android:name="com.google.android.play.core.missingsplits.PlayCoreMissingSplitsActivity"
-77-->D:\App\ST109\office\src\main\AndroidManifest.xml:74:13-100
+77-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:74:13-100
 78            android:enabled="false"
-78-->D:\App\ST109\office\src\main\AndroidManifest.xml:75:13-36
+78-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:75:13-36
 79            android:exported="false"
-79-->D:\App\ST109\office\src\main\AndroidManifest.xml:76:13-37
+79-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:76:13-37
 80            android:launchMode="singleInstance"
-80-->D:\App\ST109\office\src\main\AndroidManifest.xml:77:13-48
+80-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:77:13-48
 81            android:process=":playcore_missing_splits_activity"
-81-->D:\App\ST109\office\src\main\AndroidManifest.xml:78:13-64
+81-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:78:13-64
 82            android:stateNotNeeded="true" />
-82-->D:\App\ST109\office\src\main\AndroidManifest.xml:79:13-42
+82-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:79:13-42
 83        <activity
-83-->D:\App\ST109\office\src\main\AndroidManifest.xml:80:9-84:65
+83-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:80:9-84:65
 84            android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
-84-->D:\App\ST109\office\src\main\AndroidManifest.xml:81:13-93
+84-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:81:13-93
 85            android:exported="false"
-85-->D:\App\ST109\office\src\main\AndroidManifest.xml:82:13-37
+85-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:82:13-37
 86            android:stateNotNeeded="true"
-86-->D:\App\ST109\office\src\main\AndroidManifest.xml:83:13-42
+86-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:83:13-42
 87            android:theme="@style/Theme.PlayCore.Transparent" />
-87-->D:\App\ST109\office\src\main\AndroidManifest.xml:84:13-62
+87-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:84:13-62
 88
 89        <service
-89-->D:\App\ST109\office\src\main\AndroidManifest.xml:86:9-93:19
+89-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:86:9-93:19
 90            android:name="com.google.android.play.core.assetpacks.AssetPackExtractionService"
-90-->D:\App\ST109\office\src\main\AndroidManifest.xml:87:13-94
+90-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:87:13-94
 91            android:enabled="false"
-91-->D:\App\ST109\office\src\main\AndroidManifest.xml:88:13-36
+91-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:88:13-36
 92            android:exported="true" >
-92-->D:\App\ST109\office\src\main\AndroidManifest.xml:89:13-36
+92-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:89:13-36
 93            <meta-data
-93-->D:\App\ST109\office\src\main\AndroidManifest.xml:90:13-92:41
+93-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:90:13-92:41
 94                android:name="com.google.android.play.core.assetpacks.versionCode"
-94-->D:\App\ST109\office\src\main\AndroidManifest.xml:91:17-83
+94-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:91:17-83
 95                android:value="11002" />
-95-->D:\App\ST109\office\src\main\AndroidManifest.xml:92:17-38
+95-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:92:17-38
 96        </service>
 97        <service
-97-->D:\App\ST109\office\src\main\AndroidManifest.xml:94:9-97:40
+97-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:94:9-97:40
 98            android:name="com.google.android.play.core.assetpacks.ExtractionForegroundService"
-98-->D:\App\ST109\office\src\main\AndroidManifest.xml:95:13-95
+98-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:95:13-95
 99            android:enabled="false"
-99-->D:\App\ST109\office\src\main\AndroidManifest.xml:96:13-36
+99-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:96:13-36
 100            android:exported="false" />
-100-->D:\App\ST109\office\src\main\AndroidManifest.xml:97:13-37
+100-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:97:13-37
 101
 102        <!-- pdf_craetor -->
 103
 104        <activity
-104-->D:\App\ST109\office\src\main\AndroidManifest.xml:102:9-105:59
+104-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:102:9-105:59
 105            android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-105-->D:\App\ST109\office\src\main\AndroidManifest.xml:103:13-76
+105-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:103:13-76
 106            android:screenOrientation="portrait"
-106-->D:\App\ST109\office\src\main\AndroidManifest.xml:104:13-49
+106-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:104:13-49
 107            android:theme="@style/Base.Theme.AppCompat" />
-107-->D:\App\ST109\office\src\main\AndroidManifest.xml:105:13-56
+107-->E:\App\ST109\temp109\office\src\main\AndroidManifest.xml:105:13-56
 108        <!-- <activity android:name=".pdfcreator.activities.ActivityCropImage" /> -->
 109
 110

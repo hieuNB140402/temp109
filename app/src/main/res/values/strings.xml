@@ -140,4 +140,8 @@
     <string name="save_fail">Save fail</string>
     <string name="please_input_text">Please input text</string>
     <string name="successful">Successful</string>
+    <string name="scan_from_camera">Scan From Camera</string>
+    <string name="scan_from_gallery">Scan From Gallery</string>
+    <string name="unable_to_recognize_letters">Unable to recognize letters</string>
+    <string name="error_creating_file">Error creating file</string>
 </resources>

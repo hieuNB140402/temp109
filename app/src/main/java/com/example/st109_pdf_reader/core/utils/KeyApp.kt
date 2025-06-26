@@ -26,6 +26,7 @@ object KeyApp {
         const val STATUS_KEY = "STATUS_KEY"
         const val FROM_SETTINGS = "FROM_SETTINGS"
         const val CREATE_KEY = "CREATE_KEY"
+        const val SCAN_KEY = "SCAN_KEY"
     }
 
     object KeySharePreference {

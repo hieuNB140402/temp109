@@ -34,7 +34,12 @@ internal fun Activity.startIntentFromLeft(targetActivity: Class<*>, value: Strin
     startActivity(intent)
     overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
 }
-
+internal fun Activity.startIntentFromLeft(targetActivity: Class<*>, value: Boolean) {
+    val intent = Intent(this, targetActivity)
+    intent.putExtra(INTENT_KEY, value)
+    startActivity(intent)
+    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+}
 internal fun Activity.startIntentFromLeft(targetActivity: Class<*>, value: Int) {
     val intent = Intent(this, targetActivity)
     intent.putExtra(INTENT_KEY, value)
@@ -43,6 +48,12 @@ internal fun Activity.startIntentFromLeft(targetActivity: Class<*>, value: Int) 
 }
 
 internal fun Activity.startIntentFromLeft(targetActivity: Class<*>, key: String, value: String) {
+    val intent = Intent(this, targetActivity)
+    intent.putExtra(key, value)
+    startActivity(intent)
+    overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+}
+internal fun Activity.startIntentFromLeft(targetActivity: Class<*>, key: String, value: Boolean) {
     val intent = Intent(this, targetActivity)
     intent.putExtra(key, value)
     startActivity(intent)
