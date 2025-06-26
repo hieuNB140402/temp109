@@ -18,6 +18,7 @@ import com.example.st109_pdf_reader.core.base.BaseFragment
 import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
 import com.example.st109_pdf_reader.core.extensions.backFragmentSlideInFromLeft
+import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
@@ -56,7 +57,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     private var isTypeSort = true
     private val homeActivity: HomeActivity
         get() = activity as HomeActivity
-
+    private var typeSort = KeyApp.ValueApp.A_TO_Z
     override fun setViewBinding(
         inflater: LayoutInflater, container: ViewGroup?
     ): FragmentReaderBinding {
@@ -99,7 +100,6 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         binding.actionBar.apply {
             btnActionBarLeft.setImageResource(R.drawable.ic_back_white)
             btnActionBarLeft.visible()
-            tvCenter.text = homeActivity.getString(R.string.pdf_reader)
             tvCenter.setTextColor(homeActivity.getColor(R.color.white))
             tvCenter.visible()
             btnActionBarRight.setImageResource(R.drawable.ic_sort)
@@ -132,10 +132,12 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         when (type) {
             KeyApp.ALL_FILE -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.all_file)
             }
 
             KeyApp.WORD -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.word)
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Word")
                 tickList[0].imageTintList =
                     ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_word)
@@ -143,6 +145,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
             KeyApp.EXCEL -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.excel)
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Excel")
                 tickList[0].imageTintList =
                     ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_excel)
@@ -150,6 +153,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
             KeyApp.PPT -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.ppt)
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Powerpoint")
                 tickList[0].imageTintList =
                     ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_ppt)
@@ -157,6 +161,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
             KeyApp.PDF -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "PDF")
             }
         }
 
@@ -206,10 +211,33 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                     }
                 }
                 fileList.clear()
-                fileList.addAll(sortByNameAZ(temp).toCollection(ArrayList<FilesModel>()))
-                adapter.submitList(fileList)
+                when(typeSort){
+                    KeyApp.ValueApp.A_TO_Z -> {
+                        fileList.addAll(sortByNameAZ(temp).toCollection(ArrayList<FilesModel>()))
+                    }
+                    KeyApp.ValueApp.Z_TO_A -> {
+                        fileList.addAll(sortByNameZA(temp).toCollection(ArrayList<FilesModel>()))
+                    }
+                    KeyApp.ValueApp.OLD_TO_NEW -> {
+                        fileList.addAll(sortByDateOldToNew(temp).toCollection(ArrayList<FilesModel>()))
+                    }
+                    else -> {
+                        fileList.addAll(sortByDateNewToOld(temp).toCollection(ArrayList<FilesModel>()))
+                    }
+                }
+
+                submitAdapter()
                 homeActivity.dismissLoading()
             }
+        }
+    }
+
+    private fun submitAdapter() {
+        adapter.submitList(fileList)
+        if (fileList.isEmpty()) {
+            binding.layoutNoItem.visible()
+        } else {
+            binding.layoutNoItem.gone()
         }
     }
 
@@ -263,9 +291,10 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                         temp = sortByDateNewToOld(fileList).toCollection(ArrayList<FilesModel>())
                     }
                 }
+                typeSort = indexButton
                 fileList.clear()
                 fileList.addAll(temp)
-                adapter.submitList(fileList)
+                submitAdapter()
             }
         }
     }
@@ -327,7 +356,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                 actionBar.btnActionBarRight.setImageResource(R.drawable.ic_not_select_all)
             }
             fileList[position].isSelected = true
-            adapter.submitList(fileList)
+            submitAdapter()
         }
     }
 
@@ -357,7 +386,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             }
             binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_not_select_all)
         }
-        adapter.submitList(fileList)
+        submitAdapter()
     }
 
     private fun resetLongClick() {
@@ -366,12 +395,8 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             it.isShow = false
         }
 
-        adapter.submitList(fileList)
-        if (fileList.isEmpty()) {
-            binding.layoutNoItem.visible()
-        } else {
-            binding.layoutNoItem.gone()
-        }
+        submitAdapter()
+
 
         binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_sort)
         binding.layoutBottom.gone()
@@ -427,7 +452,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                             }
                             fileList.clear()
                             fileList.addAll(updatedList)
-                            adapter.submitList(fileList)
+                            submitAdapter()
 
                         } else {
                             homeActivity.showToast(getString(R.string.file_not_exist))
@@ -552,7 +577,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                     onFinish = { status ->
                         if (status) {
                             fileList.removeAt(position)
-                            adapter.submitList(fileList)
+                            submitAdapter()
                         } else {
                             homeActivity.showToast(getString(R.string.file_not_exist))
                         }
@@ -580,6 +605,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             val extensionArray = file.path.split(".")
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
+            homeActivity.dLog("newNameWithExtension: ${newNameWithExtension}")
             renameFileByPath(
                 homeActivity.loadingDialog,
                 homeActivity.fileViewModel,
@@ -587,8 +613,9 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                 newNameWithExtension,
                 onFinish = { status ->
                     if (status) {
+                        homeActivity.dLog("newName: ${newName}")
                         fileList[position].name = newName
-                        adapter.notifyItemChanged(position)
+                        submitAdapter()
                     } else {
                         homeActivity.showToast(getString(R.string.file_not_exist))
                     }

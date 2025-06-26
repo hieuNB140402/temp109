@@ -41,7 +41,7 @@ internal fun Activity.goToSettings() {
             this.startActivity(intent)
             dialog.dismiss()
             hideNavigation()
-        }.setNegativeButton(R.string.cancel) { dialog, _ ->
+        }.setNegativeButton(R.string.cancel1) { dialog, _ ->
             dialog.dismiss()
             hideNavigation()
         }.setCancelable(false).create()

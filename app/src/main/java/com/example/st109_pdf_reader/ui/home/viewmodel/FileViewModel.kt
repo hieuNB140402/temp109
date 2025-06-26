@@ -121,7 +121,15 @@ class FileViewModel(private val repository: FileRepository) : ViewModel() {
     fun renameFileByPath(path: String, newName: String, newPath: String) {
         viewModelScope.launch {
             try {
-                repository.updateNameByPath(path, newName, newPath)
+                val nameList = newName.split(".")
+
+                var nameWithoutExtension = ""
+                for (i in 0 until nameList.size){
+                    if (i < nameList.size - 1){
+                        nameWithoutExtension += nameList[i]
+                    }
+                }
+                repository.updateNameByPath(path, nameWithoutExtension, newPath)
             } catch (e: Exception) {
                 Log.e("nbhieu", "renameFileByPath: ${e.message}")
             }

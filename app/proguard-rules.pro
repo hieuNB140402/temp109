@@ -80,6 +80,14 @@
 -keep class com.yalantis.ucrop** { *; }
 -keep interface com.yalantis.ucrop** { *; }
 
-#-keep class com.addons.skins.craftavatar.ui.SplashActivity.** {*; }
-#-keep class com.addons.skins.craftavatar.model.** {*; }
+-keep class com.example.st109_pdf_reader.ui.SplashActivity.** {*; }
+-keep class com.example.st109_pdf_reader.data.** {*; }
 -keep public class com.google.android.gms.** { public protected *; }
+
+# Giữ lại tất cả các lớp trong mupdf
+-keep class com.artifex.mupdf.** { *; }
+-keep class com.artifex.mupdfdemo.** { *; }
+-keep class com.document.allreader.allofficefilereader.** { *; }
+# Ví dụ cho Apache POI
+-keep class org.apache.poi.** { *; }
+

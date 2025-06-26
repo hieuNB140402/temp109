@@ -95,6 +95,10 @@ object KeyApp {
         const val SAVED = 3
 
 
+        const val A_TO_Z = 0
+        const val Z_TO_A = 1
+        const val OLD_TO_NEW = 2
+        const val NEW_TO_OLD = 3
     }
 
     object DomainAPI {

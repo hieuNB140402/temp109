@@ -89,17 +89,17 @@ class LanguageActivity : BaseActivity<ActivityLanguageBinding>() {
                     listLanguage.removeAt(i)
                     listLanguage.add(0, matchingLanguage)
 
-                    if (!SystemUtils.getFirstLang(this@LanguageActivity)) {
-                        listLanguage[0].activate = true
-                    }
+//                    if (!SystemUtils.getFirstLang(this@LanguageActivity)) {
+//                        listLanguage[0].activate = true
+//                    }
                     break
                 }
             }
 
-            if (isFirstAccess) {
-                codeLang = "en"
-                listLanguage[0].activate = true
-            }
+//            if (isFirstAccess) {
+//                codeLang = "en"
+//                listLanguage[0].activate = true
+//            }
             rcv.adapter = languageAdapter
             rcv.itemAnimator = null
             languageAdapter.submitList(listLanguage)

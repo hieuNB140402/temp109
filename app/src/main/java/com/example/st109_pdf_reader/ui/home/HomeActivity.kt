@@ -84,6 +84,8 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         initRate()
         countAccess()
         deleteTempDataFolder(this, KeyApp.TEMP_IMAGE_FILTER)
+        deleteTempDataFolder(this, KeyApp.DOWNLOAD_ALBUM)
+        deleteTempDataFolder(this, KeyApp.FOLDER_CREATE_PDF)
         checkPermissionToInit()
     }
 

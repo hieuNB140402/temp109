@@ -1,6 +1,6 @@
 <lint-module
     format="1"
-    dir="D:\App\ST109\office"
+    dir="E:\App\ST109\temp109\office"
     name=":office"
     type="LIBRARY"
     maven="ST109_PDF_Reader:office:unspecified"
