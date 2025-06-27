@@ -58,6 +58,8 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     private val homeActivity: HomeActivity
         get() = activity as HomeActivity
     private var typeSort = KeyApp.ValueApp.A_TO_Z
+
+    private var countFileSelected = 0
     override fun setViewBinding(
         inflater: LayoutInflater, container: ViewGroup?
     ): FragmentReaderBinding {
@@ -138,24 +140,21 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             KeyApp.WORD -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.word)
                 binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Word")
-                tickList[0].imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                tickList[0].imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_word)
             }
 
             KeyApp.EXCEL -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.excel)
                 binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Excel")
-                tickList[0].imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                tickList[0].imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_excel)
             }
 
             KeyApp.PPT -> {
                 binding.actionBar.layoutHeader.setBackgroundResource(R.color.ppt)
                 binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Powerpoint")
-                tickList[0].imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                tickList[0].imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                 binding.layoutParentSort.setBackgroundResource(R.drawable.bg_10_ppt)
             }
 
@@ -211,16 +210,19 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                     }
                 }
                 fileList.clear()
-                when(typeSort){
+                when (typeSort) {
                     KeyApp.ValueApp.A_TO_Z -> {
                         fileList.addAll(sortByNameAZ(temp).toCollection(ArrayList<FilesModel>()))
                     }
+
                     KeyApp.ValueApp.Z_TO_A -> {
                         fileList.addAll(sortByNameZA(temp).toCollection(ArrayList<FilesModel>()))
                     }
+
                     KeyApp.ValueApp.OLD_TO_NEW -> {
                         fileList.addAll(sortByDateOldToNew(temp).toCollection(ArrayList<FilesModel>()))
                     }
+
                     else -> {
                         fileList.addAll(sortByDateNewToOld(temp).toCollection(ArrayList<FilesModel>()))
                     }
@@ -249,26 +251,22 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                         tick.setImageResource(R.drawable.ic_tick)
                         when (type) {
                             KeyApp.WORD -> {
-                                tick.imageTintList =
-                                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                                tick.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
                             }
 
                             KeyApp.EXCEL -> {
-                                tick.imageTintList =
-                                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                                tick.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
                             }
 
                             KeyApp.PPT -> {
-                                tick.imageTintList =
-                                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                                tick.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
                             }
                         }
                     } else {
                         tick.setImageResource(R.drawable.ic_not_tick)
 
                         if (type == KeyApp.WORD || type == KeyApp.EXCEL || type == KeyApp.PPT) {
-                            tick.imageTintList =
-                                ColorStateList.valueOf(homeActivity.getColor(R.color.gray_CE))
+                            tick.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.gray_CE))
                         }
 
                     }
@@ -355,12 +353,19 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             } else {
                 actionBar.btnActionBarRight.setImageResource(R.drawable.ic_not_select_all)
             }
+            countFileSelected = 1
+            binding.actionBar.tvCenter.text = getString(R.string.count_item_selected, countFileSelected)
             fileList[position].isSelected = true
             submitAdapter()
         }
     }
 
     private fun handleSelect(positionTick: Int) {
+        if (fileList[positionTick].isSelected) {
+            countFileSelected--
+        } else {
+            countFileSelected++
+        }
         fileList[positionTick].isSelected = !fileList[positionTick].isSelected
         val isNotAll = fileList.any { !it.isSelected }
 
@@ -369,6 +374,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         } else {
             binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_select_all)
         }
+        binding.actionBar.tvCenter.text = getString(R.string.count_item_selected, countFileSelected)
         adapter.submitItemSelected(positionTick, fileList[positionTick].isSelected)
     }
 
@@ -380,12 +386,16 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                 it.isSelected = true
             }
             binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_select_all)
+            countFileSelected = fileList.size
         } else {
             fileList.forEach {
                 it.isSelected = false
             }
             binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_not_select_all)
+            countFileSelected = 0
         }
+
+        binding.actionBar.tvCenter.text = getString(R.string.count_item_selected, countFileSelected)
         submitAdapter()
     }
 
@@ -399,6 +409,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
 
         binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_sort)
+        binding.actionBar.tvCenter.text = getString(R.string.pdf_reader)
         binding.layoutBottom.gone()
         isTypeSort = true
     }
@@ -419,9 +430,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
     private fun handleDelete() {
         val confirmDialog = ConfirmDialog(
-            requireActivity(),
-            R.string.delete,
-            R.string.do_you_want_to_delete_this_file
+            requireActivity(), R.string.delete, R.string.do_you_want_to_delete_this_file
         )
         SystemUtils.setLocale(requireActivity())
         confirmDialog.show()
@@ -442,10 +451,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
 
             } else {
                 homeActivity.handleDeleteFile(
-                    homeActivity.loadingDialog,
-                    homeActivity.fileViewModel,
-                    deleteList,
-                    onFinish = { status ->
+                    homeActivity.loadingDialog, homeActivity.fileViewModel, deleteList, onFinish = { status ->
                         if (status) {
                             val updatedList = fileList.filterNot { file ->
                                 deleteList.contains(file.path)
@@ -470,48 +476,33 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     private fun handleMoreMyDesign(file: FilesModel, position: Int, view: View) {
         val popupBinding = PopupReaderBinding.inflate(LayoutInflater.from(requireActivity()))
         val popupWindow = PopupWindow(
-            popupBinding.root,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
+            popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
         )
         popupWindow.elevation = 10f
 
         when (type) {
             KeyApp.WORD -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_word)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
             }
 
             KeyApp.EXCEL -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_excel)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
             }
 
             KeyApp.PPT -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_ppt)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
             }
         }
         popupBinding.tvOpenFile.select()
@@ -554,9 +545,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     private fun handleDelete(path: String, position: Int, popupWindow: PopupWindow) {
         popupWindow.dismiss()
         val confirmDialog = ConfirmDialog(
-            requireActivity(),
-            R.string.delete,
-            R.string.do_you_want_to_delete_this_file
+            requireActivity(), R.string.delete, R.string.do_you_want_to_delete_this_file
         )
         SystemUtils.setLocale(requireActivity())
         confirmDialog.show()
@@ -571,10 +560,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                 homeActivity.showToast(getString(R.string.please_choose_a_file))
             } else {
                 homeActivity.handleDeleteFile(
-                    homeActivity.loadingDialog,
-                    homeActivity.fileViewModel,
-                    path,
-                    onFinish = { status ->
+                    homeActivity.loadingDialog, homeActivity.fileViewModel, path, onFinish = { status ->
                         if (status) {
                             fileList.removeAt(position)
                             submitAdapter()
@@ -583,6 +569,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                         }
                         lifecycleScope.launch {
                             homeActivity.dismissLoading()
+                            resetLongClick()
                         }
                     })
             }
@@ -612,12 +599,23 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                 file.path,
                 newNameWithExtension,
                 onFinish = { status ->
-                    if (status) {
-                        homeActivity.dLog("newName: ${newName}")
-                        fileList[position].name = newName
-                        submitAdapter()
-                    } else {
-                        homeActivity.showToast(getString(R.string.file_not_exist))
+                    when (status) {
+                        KeyApp.FILE_NOT_EXIST -> {
+                            homeActivity.showToast(getString(R.string.file_not_exist))
+                        }
+
+                        KeyApp.FILE_NAME_EXIST -> {
+                            homeActivity.showToast(getString(R.string.new_name_already_exists))
+                        }
+
+                        KeyApp.RENAME_SUCCESS -> {
+                            fileList[position].name = newName
+                            submitAdapter()
+                        }
+
+                        else -> {
+                            homeActivity.showToast(getString(R.string.rename_failed_please_try_again))
+                        }
                     }
 
                     lifecycleScope.launch {

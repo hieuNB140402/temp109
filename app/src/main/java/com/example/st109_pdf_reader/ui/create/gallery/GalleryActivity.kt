@@ -116,7 +116,7 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
     private fun onFolderSelected(folder: AllImageModel, position: Int) = binding.apply {
         adapterImageSub.submitList(folder.listImage)
         layoutAllImage.gone()
-        btnMore.rotation = 180f
+        btnMore.rotation = 0f
         txtFolder.text = folder.nameFolder
         positionAllImage = position
     }
@@ -233,7 +233,7 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
 
     private fun toggleMoreFolders() = binding.apply {
         layoutAllImage.apply { if (isOpenMore) gone() else visible() }
-        btnMore.rotation = if (isOpenMore) 180f else 0f
+        btnMore.rotation = if (isOpenMore) 0f else 180f
         isOpenMore = !isOpenMore
     }
 

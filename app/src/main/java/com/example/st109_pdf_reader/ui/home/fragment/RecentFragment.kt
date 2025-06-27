@@ -93,6 +93,7 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
     override fun onResume() {
         super.onResume()
         updateHeaderBackground()
+        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.recent)
     }
 
     private fun handleRcv() {
@@ -298,13 +299,21 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
                 file.path,
                 newNameWithExtension,
                 onFinish = { status ->
-                    if (status) {
-                        recentList[position].name = newName
-                        recentAdapter.notifyItemChanged(position)
-                    } else {
-                        homeActivity.showToast(getString(R.string.file_not_exist))
+                    when(status){
+                        KeyApp.FILE_NOT_EXIST -> {
+                            homeActivity.showToast(getString(R.string.file_not_exist))
+                        }
+                        KeyApp.FILE_NAME_EXIST -> {
+                            homeActivity.showToast(getString(R.string.new_name_already_exists))
+                        }
+                        KeyApp.RENAME_SUCCESS -> {
+                            recentList[position].name = newName
+                            recentAdapter.notifyItemChanged(position)
+                        }
+                        else -> {
+                            homeActivity.showToast(getString(R.string.rename_failed_please_try_again))
+                        }
                     }
-
                     lifecycleScope.launch {
                         homeActivity.dismissLoading()
                     }

@@ -87,6 +87,7 @@
     <string name="easily_create_pdf_files_by_scanning_camera">Easily create pdf files by scanning camera</string>
     <string name="create">Create >></string>
     <string name="all_count">All (%d)</string>
+    <string name="all_file_count">All Files (%d)</string>
     <string name="word_count">Word (%d)</string>
     <string name="excel_count">Excel (%d)</string>
     <string name="ppt_count">PPT (%d)</string>
@@ -147,4 +148,6 @@
     <string name="unable_to_recognize_letters">Unable to recognize letters</string>
     <string name="error_creating_file">Error creating file</string>
     <string name="all_file">All File</string>
+    <string name="new_name_already_exists">New name already exists</string>
+    <string name="rename_failed_please_try_again">Rename failed, please try again</string>
 </resources>

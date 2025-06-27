@@ -3,10 +3,14 @@ package com.example.st109_pdf_reader.ui.home.fragment
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.DisplayMetrics
+import android.util.TypedValue
+import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupWindow
 import androidx.lifecycle.lifecycleScope
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseFragment
@@ -16,6 +20,7 @@ import com.example.st109_pdf_reader.core.extensions.goToSettings
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.requestPermission
+import com.example.st109_pdf_reader.core.extensions.select
 import com.example.st109_pdf_reader.core.extensions.setGradientTextHeightColor
 import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
 import com.example.st109_pdf_reader.core.extensions.startFragmentSlideInFromRight
@@ -39,6 +44,8 @@ import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
 import com.example.st109_pdf_reader.databinding.FragmentHomeBinding
+import com.example.st109_pdf_reader.databinding.PopupCreateBinding
+import com.example.st109_pdf_reader.databinding.PopupEditBinding
 import com.example.st109_pdf_reader.ui.camera.CameraActivity
 import com.example.st109_pdf_reader.ui.create.gallery.GalleryActivity
 import com.example.st109_pdf_reader.ui.home.HomeActivity
@@ -56,7 +63,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     private val homeActivity: HomeActivity
         get() = activity as HomeActivity
 
-    private var isShowPopup = false
+
     override fun setViewBinding(
         inflater: LayoutInflater, container: ViewGroup?
     ): FragmentHomeBinding {
@@ -75,16 +82,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             homeActivity.fileViewModel.refreshScan(requireActivity())
             binding.swrTypeHome.isRefreshing = false
         }
-        binding.btnAdd.setOnSingleClick {
-            handlePopup()
-        }
-        binding.viewOutsizeAdd.setOnSingleClick {
-            binding.layoutMoreOption.gone()
-            binding.viewOutsizeAdd.gone()
-            isShowPopup = false
-        }
-        binding.btnGallery.setOnSingleClick { checkPermissionStorage() }
-        binding.btnCamera.setOnSingleClick { checkPermissionCamera() }
+        binding.btnAdd.setOnSingleClick { handlePopup(it) }
         binding.btnCreate.setOnSingleClick { handleCreate() }
         handleRcv()
     }
@@ -180,17 +178,57 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     override fun onResume() {
         super.onResume()
         homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
+        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.pdf_reader)
     }
 
-    private fun handlePopup() {
-        if (isShowPopup) {
-            binding.layoutMoreOption.gone()
-            binding.viewOutsizeAdd.gone()
-        } else {
-            binding.layoutMoreOption.visible()
-            binding.viewOutsizeAdd.visible()
+    private fun handlePopup(view: View) {
+        val popupBinding = PopupCreateBinding.inflate(LayoutInflater.from(homeActivity))
+        val popupWindow = PopupWindow(
+            popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
+        ).apply {
+            elevation = 10f
+            isFocusable = true
+            isOutsideTouchable = true
         }
-        isShowPopup = !isShowPopup
+
+        popupBinding.apply {
+            tvCamera.select()
+            tvGallery.select()
+            btnGallery.setOnSingleClick {
+                checkPermissionStorage()
+                popupWindow.dismiss()
+            }
+            btnCamera.setOnSingleClick {
+                checkPermissionCamera()
+                popupWindow.dismiss()
+            }
+        }
+
+        val location = IntArray(2)
+        view.getLocationOnScreen(location)
+        val x = location[0]
+        val y = location[1]
+
+        // Đo trước khi lấy kích thước
+        popupBinding.root.measure(
+            View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED
+        )
+        val popupHeight = popupBinding.root.measuredHeight
+        val popupWidth = popupBinding.root.measuredWidth
+
+        // Chuyển 16dp thành pixel
+        val marginPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP, 16f, resources.displayMetrics
+        ).toInt()
+
+        val displayMetrics = DisplayMetrics()
+        homeActivity.windowManager.defaultDisplay.getMetrics(displayMetrics)
+        val screenWidth = displayMetrics.widthPixels
+
+        val finalX = screenWidth - popupWidth - marginPx
+        val finalY = y - popupHeight - marginPx
+
+        popupWindow.showAtLocation(view, Gravity.NO_GRAVITY, finalX, finalY)
     }
 
     private fun handleCreate() {

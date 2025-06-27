@@ -520,7 +520,8 @@ fun createPdfFromTextInternal(context: Context, text: String): FilesModel {
     }
 
     pdfDocument.finishPage(page)
-
+    val pdfDir = File(context.filesDir, KeyApp.FOLDER_CREATE_PDF)
+    if (!pdfDir.exists()) pdfDir.mkdirs()
     // 🔸 Tạo file trong internal storage
     val file = File(context.filesDir, "${KeyApp.FOLDER_CREATE_PDF}/${fileNameWithExtension}")
     FileOutputStream(file).use { out ->

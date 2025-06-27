@@ -13,7 +13,7 @@
       "attributes": [],
       "versionCode": 1,
       "versionName": "1.0.0",
-      "outputFile": "ST109_PDF_Reader_v1.0.0_06.26.2025-release.apk"
+      "outputFile": "ST109_PDF_Reader_v1.0.0_06.27.2025-release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/ST109_PDF_Reader_v1.0.0_06.26.2025-release.dm"
+        "baselineProfiles/1/ST109_PDF_Reader_v1.0.0_06.27.2025-release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/ST109_PDF_Reader_v1.0.0_06.26.2025-release.dm"
+        "baselineProfiles/0/ST109_PDF_Reader_v1.0.0_06.27.2025-release.dm"
       ]
     }
   ],

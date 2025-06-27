@@ -84,6 +84,7 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
     override fun onResume() {
         super.onResume()
         updateHeaderBackground()
+        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.bookmark)
     }
 
     private fun initRcv() {
@@ -292,12 +293,20 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(homeActivity.loadingDialog, homeActivity.fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
-                if (status) {
-                    bookmarkList[position].name = newName
-                    bookmarkAdapter.notifyItemChanged(position)
-                }
-                else {
-                    homeActivity.showToast(getString(R.string.file_not_exist))
+                when(status){
+                    KeyApp.FILE_NOT_EXIST -> {
+                        homeActivity.showToast(getString(R.string.file_not_exist))
+                    }
+                    KeyApp.FILE_NAME_EXIST -> {
+                        homeActivity.showToast(getString(R.string.new_name_already_exists))
+                    }
+                    KeyApp.RENAME_SUCCESS -> {
+                        bookmarkList[position].name = newName
+                        bookmarkAdapter.notifyItemChanged(position)
+                    }
+                    else -> {
+                        homeActivity.showToast(getString(R.string.rename_failed_please_try_again))
+                    }
                 }
 
                 lifecycleScope.launch {

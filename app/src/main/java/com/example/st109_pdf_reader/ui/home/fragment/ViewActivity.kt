@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.document.allreader.allofficefilereader.common.IOfficeToPicture
 import com.document.allreader.allofficefilereader.constant.EventConstant
+import com.document.allreader.allofficefilereader.fc.hssf.usermodel.HeaderFooter.file
 import com.document.allreader.allofficefilereader.officereader.AppFrame
 import com.document.allreader.allofficefilereader.officereader.beans.AImageButton
 import com.document.allreader.allofficefilereader.officereader.beans.AImageCheckButton
@@ -37,7 +38,10 @@ import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
 import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
+import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.dpToPx
+import com.example.st109_pdf_reader.core.extensions.goToManageSettings
+import com.example.st109_pdf_reader.core.extensions.goToSettings
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.handleBackLeftToRight
 import com.example.st109_pdf_reader.core.extensions.handleBackLeftToRight
@@ -51,6 +55,7 @@ import com.example.st109_pdf_reader.core.extensions.showToast
 import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.SystemUtils
+import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
 import com.example.st109_pdf_reader.data.local.AppDatabase
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.local.repository.FileRepository
@@ -89,79 +94,89 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun initView() {
-        if (!Environment.isExternalStorageManager()) {
-            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-            intent.data = ("package:$packageName").toUri()
-            startActivity(intent)
-        } else {
-            val dao = AppDatabase.getInstance(this).fileDao()
-            val repository = FileRepository(dao)
-
-            fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
-
-            val file = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)
-            this.file = file!!
-
-            changeHeader(file.type)
-            control = MainControl(this)
-            appFrame = AppFrame(applicationContext)
-            appFrame?.post {
-                try {
-                    this.control?.openFile(this.file.path)
-                    Log.i("nbhieu", "openfile")
-                } catch (e: Exception) {
-                    Log.i("nbhieu", e.toString())
-                }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+                intent.data = ("package:$packageName").toUri()
+                startActivity(intent)
             }
-            this.control?.setOffictToPicture(object : IOfficeToPicture {
-
-                private var bitmap: Bitmap? = null
-
-                override fun setModeType(modeType: Byte) {
-
-                }
-
-                override fun getModeType(): Byte {
-                    return 1
-                }
-
-                override fun getBitmap(visibleWidth: Int, visibleHeight: Int): Bitmap {
-                    if (visibleHeight != 0 && visibleWidth != 0) {
-                        val bitmap = this.bitmap
-                        if (!(bitmap != null && bitmap.width == visibleWidth && this.bitmap?.height == visibleHeight)) {
-                            val bitmap2 = this.bitmap
-                            bitmap2?.recycle()
-                        }
-                        this.bitmap = Bitmap.createBitmap(
-                            visibleWidth, visibleHeight, Bitmap.Config.ARGB_8888
-                        )
-                    }
-                    return this.bitmap!!
-                }
-
-                override fun callBack(bitmap: Bitmap?) {
-
-                }
-
-                override fun isZoom(): Boolean {
-                    return false
-                }
-
-                override fun dispose() {
-
-                }
-            })
-
-            binding.actionBar.tvCenter.text = this.file.name
-            if (this.appFrame == null) {
-                Log.i("nbhieu", "appFrame: null")
-            } else {
-                Log.i("nbhieu", "appFrame: not null")
-                binding.appFrame.addView(this.appFrame)
+            else {
+                initData()
+            }
+        }else{
+            if (checkPermissions(storagePermission)){
+                initData()
+            }else{
+                goToSettings()
             }
         }
+    }
+    private fun initData(){
+        val dao = AppDatabase.getInstance(this).fileDao()
+        val repository = FileRepository(dao)
 
+        fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
 
+        val file = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)
+        this.file = file!!
+
+        changeHeader(file.type)
+        control = MainControl(this)
+        appFrame = AppFrame(applicationContext)
+        appFrame?.post {
+            try {
+                this.control?.openFile(this.file.path)
+                Log.i("nbhieu", "openfile")
+            } catch (e: Exception) {
+                Log.i("nbhieu", e.toString())
+            }
+        }
+        this.control?.setOffictToPicture(object : IOfficeToPicture {
+
+            private var bitmap: Bitmap? = null
+
+            override fun setModeType(modeType: Byte) {
+
+            }
+
+            override fun getModeType(): Byte {
+                return 1
+            }
+
+            override fun getBitmap(visibleWidth: Int, visibleHeight: Int): Bitmap {
+                if (visibleHeight != 0 && visibleWidth != 0) {
+                    val bitmap = this.bitmap
+                    if (!(bitmap != null && bitmap.width == visibleWidth && this.bitmap?.height == visibleHeight)) {
+                        val bitmap2 = this.bitmap
+                        bitmap2?.recycle()
+                    }
+                    this.bitmap = Bitmap.createBitmap(
+                        visibleWidth, visibleHeight, Bitmap.Config.ARGB_8888
+                    )
+                }
+                return this.bitmap!!
+            }
+
+            override fun callBack(bitmap: Bitmap?) {
+
+            }
+
+            override fun isZoom(): Boolean {
+                return false
+            }
+
+            override fun dispose() {
+
+            }
+        })
+
+        binding.actionBar.tvCenter.text = this.file.name
+        if (this.appFrame == null) {
+            Log.i("nbhieu", "appFrame: null")
+        } else {
+            Log.i("nbhieu", "appFrame: not null")
+            binding.appFrame.addView(this.appFrame)
+        }
     }
 
     override fun viewListener() {
@@ -675,10 +690,22 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(
                 loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
-                    if (status) {
-                        binding.actionBar.tvCenter.text = newName
-                    } else {
-                        showToast(getString(R.string.file_not_exist))
+                    when (status) {
+                        KeyApp.FILE_NOT_EXIST -> {
+                            showToast(getString(R.string.file_not_exist))
+                        }
+
+                        KeyApp.FILE_NAME_EXIST -> {
+                            showToast(getString(R.string.new_name_already_exists))
+                        }
+
+                        KeyApp.RENAME_SUCCESS -> {
+                            binding.actionBar.tvCenter.text = newName
+                        }
+
+                        else -> {
+                            showToast(getString(R.string.rename_failed_please_try_again))
+                        }
                     }
 
                     lifecycleScope.launch {

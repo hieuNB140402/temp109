@@ -770,10 +770,19 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(
                 loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
-                    if (status) {
-                        binding.actionBar.tvCenter.text = newName
-                    } else {
-                        showToast(getString(R.string.file_not_exist))
+                    when(status){
+                        KeyApp.FILE_NOT_EXIST -> {
+                            showToast(getString(R.string.file_not_exist))
+                        }
+                        KeyApp.FILE_NAME_EXIST -> {
+                            showToast(getString(R.string.new_name_already_exists))
+                        }
+                        KeyApp.RENAME_SUCCESS -> {
+                            binding.actionBar.tvCenter.text = newName
+                        }
+                        else -> {
+                            showToast(getString(R.string.rename_failed_please_try_again))
+                        }
                     }
 
                     lifecycleScope.launch {

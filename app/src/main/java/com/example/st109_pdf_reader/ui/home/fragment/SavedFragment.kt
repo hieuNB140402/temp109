@@ -1,5 +1,6 @@
 package com.example.st109_pdf_reader.ui.home.fragment
 
+import android.R.attr.type
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
@@ -40,13 +41,9 @@ import kotlinx.coroutines.launch
 import java.io.File
 
 class SavedFragment : BaseFragment<FragmentSavedBinding>() {
-    private val typeAdapter by lazy { TypeFileAdapter(requireActivity()) }
     private val savedAdapter by lazy { ReaderAdapter(requireActivity()) }
-
-    private val typeList = ArrayList<HomeAllFileModel>()
     private val savedList = ArrayList<FilesModel>()
     private val getFileList = ArrayList<FilesModel>()
-    private var type = KeyApp.ALL_FILE
 
     private val homeActivity: HomeActivity
         get() = activity as HomeActivity
@@ -69,10 +66,6 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
 
     private fun initRcv() {
         binding.apply {
-            rcvTypeFile.apply {
-                adapter = typeAdapter
-                itemAnimator = null
-            }
             rcvFile.apply {
                 adapter = savedAdapter
                 itemAnimator = null
@@ -83,11 +76,6 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
     override fun dataObservable() {
         super.dataObservable()
         val homeActivity = (activity as HomeActivity)
-        lifecycleScope.launch {
-            homeActivity.fileViewModel.filesFlow.collectLatest {
-                submitAdapter(it.toCollection(ArrayList<FilesModel>()))
-            }
-        }
         homeActivity.fileList.observe(homeActivity) {
             getFileList.clear()
             getFileList.addAll(it)
@@ -98,15 +86,10 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
     override fun onResume() {
         super.onResume()
         updateHeaderBackground()
+        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.saved)
     }
 
     private fun handleRcv() {
-        typeAdapter.apply {
-            onItemClick = { typeModel ->
-                handleSelectType(typeModel)
-            }
-        }
-
         savedAdapter.apply {
             onItemClick = { file ->
                 handleOpenFile(file)
@@ -120,42 +103,19 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
         }
     }
 
-    private fun submitAdapter(fileList: ArrayList<FilesModel>) {
-        typeList.clear()
-        typeList.addAll(handleConvertFile(fileList, isSaved = true))
-        val positionType = typeList.indexOfFirst { it.type == type }
-        typeList[positionType].isSelected = true
-        typeAdapter.submitList(typeList)
-    }
-
     private fun handleBookmark(file: FilesModel, position: Int) {
         homeActivity.fileViewModel.updateBookmark(file.id, !file.isBookmark)
         savedAdapter.submitItemBookmark(position)
     }
 
     private fun updateHeaderBackground() {
-        val colorRes = when (type) {
-            KeyApp.WORD -> R.color.word
-            KeyApp.EXCEL -> R.color.excel
-            KeyApp.PPT -> R.color.ppt
-            KeyApp.PDF, KeyApp.ALL_FILE -> R.color.pdf
-            else -> R.color.pdf
-        }
-        homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(colorRes)
+        homeActivity.binding.actionBar.layoutHeader.setBackgroundResource(R.color.pdf)
     }
-    
-    private fun handleSelectType(typeModel: HomeAllFileModel) {
-        type = typeModel.type
-        updateHeaderBackground()
-        homeActivity.fileViewModel.refreshScan(homeActivity)
-        convertToSaved()
-    }
+
 
     private fun convertToSaved() {
         lifecycleScope.launch(Dispatchers.IO) {
-            val temp = getFileList.filter {
-                it.isSaved && (type == KeyApp.ALL_FILE || it.type == type)
-            }
+            val temp = getFileList.filter { it.isSaved }
             savedList.clear()
             savedList.addAll(temp)
 
@@ -180,31 +140,6 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
             popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true)
         popupWindow.elevation = 10f
 
-        when (type) {
-            KeyApp.WORD -> {
-                popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_word)
-                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-            }
-
-            KeyApp.EXCEL -> {
-                popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_excel)
-                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-            }
-
-            KeyApp.PPT -> {
-                popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_ppt)
-                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-            }
-        }
         popupBinding.tvOpenFile.select()
         popupBinding.tvRename.select()
         popupBinding.tvShare.select()
@@ -290,12 +225,20 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(homeActivity.loadingDialog, homeActivity.fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
-                if (status) {
-                    savedList[position].name = newName
-                    savedAdapter.notifyItemChanged(position)
-                }
-                else {
-                    homeActivity.showToast(getString(R.string.file_not_exist))
+                when(status){
+                    KeyApp.FILE_NOT_EXIST -> {
+                        homeActivity.showToast(getString(R.string.file_not_exist))
+                    }
+                    KeyApp.FILE_NAME_EXIST -> {
+                        homeActivity.showToast(getString(R.string.new_name_already_exists))
+                    }
+                    KeyApp.RENAME_SUCCESS -> {
+                        savedList[position].name = newName
+                        savedAdapter.notifyItemChanged(position)
+                    }
+                    else -> {
+                        homeActivity.showToast(getString(R.string.rename_failed_please_try_again))
+                    }
                 }
 
                 lifecycleScope.launch {

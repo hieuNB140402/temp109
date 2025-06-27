@@ -43,7 +43,6 @@ class FilterActivity : BaseActivity<ActivityFilterBinding>() {
     private val imageList = ArrayList<CreatePDFModel>()
     private var quantityPage = 0
 
-    private var blackWhiteThresholdPaint: Paint? = null
     private var sepiaVintagePaint: Paint? = null
     private var grayscalePaint: Paint? = null
     private var invertColorPaint: Paint? = null
@@ -177,7 +176,6 @@ class FilterActivity : BaseActivity<ActivityFilterBinding>() {
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
                     changePage(position)
-                    iLog("in")
                 }
             })
 
@@ -248,16 +246,6 @@ class FilterActivity : BaseActivity<ActivityFilterBinding>() {
     }
 
     private fun initPaints() {
-        // 1. Đen trắng theo ngưỡng (viết tay)
-        blackWhiteThresholdPaint = Paint().apply {
-            colorFilter = ColorMatrixColorFilter(
-                ColorMatrix(
-                    floatArrayOf(
-                        85f, 85f, 85f, 0f, -255f, 85f, 85f, 85f, 0f, -255f, 85f, 85f, 85f, 0f, -255f, 0f, 0f, 0f, 1f, 0f
-                    )
-                )
-            )
-        }
 
         // 2. Sepia cổ điển
         sepiaVintagePaint = Paint().apply {
@@ -597,29 +585,28 @@ class FilterActivity : BaseActivity<ActivityFilterBinding>() {
 
         if (Build.VERSION.SDK_INT != INDEX_SATURATION && index != -1) {
             when (index) {
-                1 -> canvas.drawBitmap(btm, 0f, 0f, blackWhiteThresholdPaint)
-                2 -> canvas.drawBitmap(btm, 0f, 0f, sepiaVintagePaint)
-                3 -> canvas.drawBitmap(btm, 0f, 0f, grayscalePaint)
-                4 -> canvas.drawBitmap(btm, 0f, 0f, invertColorPaint)
-                5 -> canvas.drawBitmap(btm, 0f, 0f, brightContrastPaint)
-                6 -> canvas.drawBitmap(btm, 0f, 0f, overexposedPaint)
-                7 -> canvas.drawBitmap(btm, 0f, 0f, rgbSwappedPaint)
-                8 -> canvas.drawBitmap(btm, 0f, 0f, warmEffectPaint)
-                9 -> canvas.drawBitmap(btm, 0f, 0f, coolEffectPaint)
-                10 -> canvas.drawBitmap(btm, 0f, 0f, surrealPaint)
-                11 -> canvas.drawBitmap(btm, 0f, 0f, subtleTonePaint)
-                12 -> canvas.drawBitmap(btm, 0f, 0f, purpleTintPaint)
-                13 -> canvas.drawBitmap(btm, 0f, 0f, yellowGreenPaint)
-                14 -> canvas.drawBitmap(btm, 0f, 0f, cyanGlowPaint)
-                15 -> canvas.drawBitmap(btm, 0f, 0f, highContrastBWPaint)
-                16 -> canvas.drawBitmap(btm, 0f, 0f, vintageFadePaint)
-                17 -> canvas.drawBitmap(btm, 0f, 0f, icyBluePaint)
-                18 -> canvas.drawBitmap(btm, 0f, 0f, richSepiaPaint)
-                19 -> canvas.drawBitmap(btm, 0f, 0f, milkyTonePaint)
-                20 -> canvas.drawBitmap(btm, 0f, 0f, greenHighlightPaint)
-                21 -> canvas.drawBitmap(btm, 0f, 0f, softPeachPaint)
-                22 -> canvas.drawBitmap(btm, 0f, 0f, lightBoostPaint)
-                23 -> canvas.drawBitmap(btm, 0f, 0f, darkBoostPaint)
+                1 ->canvas.drawBitmap(btm, 0f, 0f, sepiaVintagePaint)
+                2 -> canvas.drawBitmap(btm, 0f, 0f, grayscalePaint)
+                3 -> canvas.drawBitmap(btm, 0f, 0f, invertColorPaint)
+                4 -> canvas.drawBitmap(btm, 0f, 0f, brightContrastPaint)
+                5 -> canvas.drawBitmap(btm, 0f, 0f, overexposedPaint)
+                6 -> canvas.drawBitmap(btm, 0f, 0f, rgbSwappedPaint)
+                7 -> canvas.drawBitmap(btm, 0f, 0f, warmEffectPaint)
+                8 -> canvas.drawBitmap(btm, 0f, 0f, coolEffectPaint)
+                9 -> canvas.drawBitmap(btm, 0f, 0f, surrealPaint)
+                10 -> canvas.drawBitmap(btm, 0f, 0f, subtleTonePaint)
+                11 -> canvas.drawBitmap(btm, 0f, 0f, purpleTintPaint)
+                12 -> canvas.drawBitmap(btm, 0f, 0f, yellowGreenPaint)
+                13 -> canvas.drawBitmap(btm, 0f, 0f, cyanGlowPaint)
+                14 -> canvas.drawBitmap(btm, 0f, 0f, highContrastBWPaint)
+                15 -> canvas.drawBitmap(btm, 0f, 0f, vintageFadePaint)
+                16 -> canvas.drawBitmap(btm, 0f, 0f, icyBluePaint)
+                17 -> canvas.drawBitmap(btm, 0f, 0f, richSepiaPaint)
+                18 -> canvas.drawBitmap(btm, 0f, 0f, milkyTonePaint)
+                19 -> canvas.drawBitmap(btm, 0f, 0f, greenHighlightPaint)
+                20 -> canvas.drawBitmap(btm, 0f, 0f, softPeachPaint)
+                21 -> canvas.drawBitmap(btm, 0f, 0f, lightBoostPaint)
+                22 -> canvas.drawBitmap(btm, 0f, 0f, darkBoostPaint)
             }
         }
         return bm
@@ -674,6 +661,7 @@ class FilterActivity : BaseActivity<ActivityFilterBinding>() {
                             adapterFilter.submitItem(position)
                         } else {
                             pageAdapter.submitList(imageList)
+                            adapterFilter.submitItem(position)
                             binding.vpgPage.currentItem = positionSelected - 1
                             delay(100)
                             binding.vpgPage.currentItem = positionSelected

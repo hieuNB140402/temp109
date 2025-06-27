@@ -22,6 +22,7 @@ import com.document.allreader.allofficefilereader.fc.hssf.usermodel.HeaderFooter
 import com.document.allreader.allofficefilereader.utils.FileUtils.context
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.dialog.LoadingDialog
+import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.core.utils.SystemUtils.lastClickTime
 import com.example.st109_pdf_reader.ui.home.HomeActivity
@@ -81,6 +82,7 @@ fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, p
     dialog.show()
     val handleExceptionCoroutine = CoroutineExceptionHandler { _, throwable ->
         Log.e("nbhieu", "handleDeleteFile: ${throwable.message}")
+        onFinish.invoke(false)
     }
     CoroutineScope(SupervisorJob() + Dispatchers.IO + handleExceptionCoroutine).launch {
         val job1 = async {
@@ -230,43 +232,52 @@ fun renameFileByPath(
     viewModel: FileViewModel,
     path: String,
     newNameWithExtension: String,
-    onFinish: ((Boolean) -> Unit)
+    onFinish: (String) -> Unit
 ) {
     dialog.show()
-    val handleExceptionCoroutine = CoroutineExceptionHandler { _, throwable ->
+
+    val handler = CoroutineExceptionHandler { _, throwable ->
         Log.e("nbhieu", "renameFileByPath: ${throwable.message}", throwable)
         CoroutineScope(Dispatchers.Main).launch {
             dialog.dismiss()
-            onFinish(false)
+            onFinish(KeyApp.FILE_NOT_EXIST)
         }
     }
 
-    CoroutineScope(SupervisorJob() + Dispatchers.IO + handleExceptionCoroutine).launch {
-        val result = runCatching {
+    CoroutineScope(Dispatchers.IO + SupervisorJob() + handler).launch {
+        val resultCode = try {
             val oldFile = File(path)
-            val parentDir = oldFile.parent ?: return@runCatching false
-            val newPath = "$parentDir/$newNameWithExtension"
-            val newFile = File(newPath)
+            val parentDir = oldFile.parent
+            if (parentDir == null || !oldFile.exists()) {
+                KeyApp.FILE_NOT_EXIST
+            } else {
+                val newPath = "$parentDir/$newNameWithExtension"
+                val newFile = File(newPath)
 
-            if (!oldFile.exists() || newFile.exists()) return@runCatching false
-
-            // Rename file in storage
-            val renameSuccess = oldFile.renameTo(newFile)
-
-            // Update in Room
-            if (renameSuccess) {
-                viewModel.renameFileByPath(path, newNameWithExtension, newPath)
+                if (newFile.exists()) {
+                    KeyApp.FILE_NAME_EXIST
+                } else {
+                    val renameSuccess = oldFile.renameTo(newFile)
+                    if (renameSuccess) {
+                        viewModel.renameFileByPath(path, newNameWithExtension, newPath)
+                        KeyApp.RENAME_SUCCESS
+                    } else {
+                        KeyApp.RENAME_FAIL
+                    }
+                }
             }
-
-            renameSuccess
+        } catch (e: Exception) {
+            Log.e("nbhieu", "renameFileByPath exception", e)
+            KeyApp.FILE_NOT_EXIST
         }
 
         withContext(Dispatchers.Main) {
             dialog.dismiss()
-            onFinish(result.getOrElse { false })
+            onFinish(resultCode)
         }
     }
 }
+
 
 
 internal fun Activity.handleBackLeftToRight() {

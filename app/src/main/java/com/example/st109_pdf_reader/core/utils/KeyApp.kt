@@ -15,6 +15,10 @@ object KeyApp {
     const val RENAME = "RENAME"
     const val SAVE_FILE = "SAVE_FILE"
     const val SEARCH_FILE = "SEARCH_FILE"
+    const val FILE_NOT_EXIST = "FILE_NOT_EXIST"
+    const val FILE_NAME_EXIST = "FILE_NAME_EXIST"
+    const val RENAME_SUCCESS = "RENAME_SUCCESS"
+    const val RENAME_FAIL = "RENAME_FAIL"
 
     object KeyIntent {
         const val INTENT_KEY = "INTENT_KEY"

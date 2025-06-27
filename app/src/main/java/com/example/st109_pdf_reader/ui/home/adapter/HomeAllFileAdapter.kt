@@ -34,7 +34,7 @@ class HomeAllFileAdapter(val context: Context) : RecyclerView.Adapter<HomeAllFil
             when (item.type) {
                 KeyApp.ALL_FILE -> {
                     binding.imvImage.setImageResource(R.drawable.img_all_file_home)
-                    binding.tvName.text = context.getString(R.string.all_count, item.quantity)
+                    binding.tvName.text = context.getString(R.string.all_file_count, item.quantity)
                 }
 
                 KeyApp.WORD -> {

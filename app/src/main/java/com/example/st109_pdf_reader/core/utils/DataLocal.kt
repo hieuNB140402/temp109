@@ -48,7 +48,6 @@ object DataLocal {
     fun getFilterList(): ArrayList<FilterModel> {
         return arrayListOf(
             FilterModel(R.drawable.ic_none_filter, name = "None", true),
-            FilterModel(R.drawable.img_filter_1, name = "Black White"),
             FilterModel(R.drawable.img_filter_2, name = "Sepia Vintage"),
             FilterModel(R.drawable.img_filter_3, name = "Gray Scale"),
             FilterModel(R.drawable.img_filter_4, name = "Invert Color"),

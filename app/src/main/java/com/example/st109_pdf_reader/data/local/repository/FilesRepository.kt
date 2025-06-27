@@ -21,6 +21,7 @@ class FileRepository(private val fileDao: FileDao) {
     suspend fun updateBookmark(fileId: Int, isBookmark: Boolean) {
         fileDao.updateBookmark(fileId, isBookmark)
     }
+
     suspend fun updateRecentFile(fileId: Int, isRecent: Boolean) {
         fileDao.updateRecentFile(fileId, isRecent)
     }
@@ -32,11 +33,11 @@ class FileRepository(private val fileDao: FileDao) {
         fileDao.deleteFiles(files)
     }
 
-    suspend fun deleteFileByPath(path: String){
+    suspend fun deleteFileByPath(path: String) {
         fileDao.deleteFilesByPath(path)
     }
 
-    suspend fun updateNameByPath(path: String, newName: String, newPath: String){
+    suspend fun updateNameByPath(path: String, newName: String, newPath: String) {
         fileDao.updateNameByPath(path, newName, newPath)
     }
 
@@ -44,7 +45,10 @@ class FileRepository(private val fileDao: FileDao) {
         val list = mutableListOf<FilesModel>()
         val uri = MediaStore.Files.getContentUri("external")
         val projection = arrayOf(
-            MediaStore.Files.FileColumns.DATA, MediaStore.Files.FileColumns.SIZE, MediaStore.Files.FileColumns.DISPLAY_NAME)
+            MediaStore.Files.FileColumns.DATA,
+            MediaStore.Files.FileColumns.SIZE,
+            MediaStore.Files.FileColumns.DISPLAY_NAME
+        )
         val cursor = context.contentResolver.query(uri, projection, null, null, null)
         cursor?.use {
             val indexPath = it.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA)
@@ -52,16 +56,18 @@ class FileRepository(private val fileDao: FileDao) {
             val indexName = it.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DISPLAY_NAME)
             while (it.moveToNext()) {
                 val path = it.getString(indexPath)
-                val size = if (indexSize == 0){
+                val size = if (indexSize == 0) {
                     File(path).length()
-                }else{
+                } else {
                     it.getLong(indexSize)
                 }
-//                Log.i("nbhieu", "size: $size")
-                val name = it.getString(indexName).split(".")[0]
-//                Log.i("nbhieu", "name: $name")
+                val listPath = path.split("/")
+                val name = listPath.last().split(".").first()
+
                 if (path.endsWith(".pdf") || path.endsWith(".doc") || path.endsWith(".docx") || path.endsWith(".ppt") || path.endsWith(
-                        ".pptx") || path.endsWith(".xls") || path.endsWith(".xlsx")) {
+                        ".pptx"
+                    ) || path.endsWith(".xls") || path.endsWith(".xlsx")
+                ) {
                     val file = File(path)
                     val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(file.lastModified())
                     val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(file.lastModified())
@@ -72,12 +78,16 @@ class FileRepository(private val fileDao: FileDao) {
                         path.endsWith(".xls") || path.endsWith(".xlsx") -> "EXCEL"
                         else -> "OTHER"
                     }
+                    Log.i("nbhieu", "path: $path")
+                    Log.i("nbhieu", "name: $name")
+                    Log.i("nbhieu", "_____________________________________________________________________________")
                     list.add(FilesModel(0, type, name, path, size, date, time))
                 }
             }
         }
         return list
     }
+
     fun searchFilesByName(query: String): Flow<List<FilesModel>> {
         return fileDao.searchFilesByName(query)
     }

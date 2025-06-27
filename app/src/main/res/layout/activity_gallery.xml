@@ -57,7 +57,6 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:rotation="180"
                 android:src="@drawable/ic_show_more_image" />
         </LinearLayout>
 
