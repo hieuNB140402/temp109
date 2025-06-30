@@ -14,6 +14,7 @@ import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
+import com.example.st109_pdf_reader.core.extensions.handleCheckOpenFile
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
 import com.example.st109_pdf_reader.core.extensions.select
@@ -22,6 +23,7 @@ import com.example.st109_pdf_reader.core.extensions.shareFile
 import com.example.st109_pdf_reader.core.extensions.showToast
 import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.KeyApp
+import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
@@ -34,6 +36,7 @@ import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 
 class RecentFragment : BaseFragment<FragmentRecentBinding>() {
     private val typeAdapter by lazy { TypeFileAdapter(requireActivity()) }
@@ -48,14 +51,19 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
         get() = activity as HomeActivity
 
     override fun setViewBinding(
-        inflater: LayoutInflater,
-        container: ViewGroup?
+        inflater: LayoutInflater, container: ViewGroup?
     ): FragmentRecentBinding {
         return FragmentRecentBinding.inflate(inflater, container, false)
     }
 
     override fun initView() {
+        binding.swrType.setOnRefreshListener {
+            homeActivity.fileViewModel.refreshScan(requireActivity())
+            binding.swrType.isRefreshing = false
+        }
+
         initRcv()
+        binding.swrType.setColorSchemeResources(R.color.red_end)
     }
 
     override fun viewListener() {
@@ -93,7 +101,7 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
     override fun onResume() {
         super.onResume()
         updateHeaderBackground()
-        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.recent)
+        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.recent_files)
     }
 
     private fun handleRcv() {
@@ -177,48 +185,33 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
     private fun handleMoreMyDesign(file: FilesModel, position: Int, view: View) {
         val popupBinding = PopupReaderBinding.inflate(LayoutInflater.from(homeActivity))
         val popupWindow = PopupWindow(
-            popupBinding.root,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
+            popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
         )
         popupWindow.elevation = 10f
 
         when (type) {
             KeyApp.WORD -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_word)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.word))
             }
 
             KeyApp.EXCEL -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_excel)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.excel))
             }
 
             KeyApp.PPT -> {
                 popupBinding.layoutParent.setBackgroundResource(R.drawable.bg_10_ppt)
-                popupBinding.imvOpenFile.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvRename.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvShare.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
-                popupBinding.imvDelete.imageTintList =
-                    ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvOpenFile.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvRename.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvShare.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
+                popupBinding.imvDelete.imageTintList = ColorStateList.valueOf(homeActivity.getColor(R.color.ppt))
             }
         }
         popupBinding.tvOpenFile.select()
@@ -294,22 +287,27 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(
+                homeActivity,
                 homeActivity.loadingDialog,
                 homeActivity.fileViewModel,
                 file.path,
                 newNameWithExtension,
                 onFinish = { status ->
-                    when(status){
+                    when (status) {
                         KeyApp.FILE_NOT_EXIST -> {
                             homeActivity.showToast(getString(R.string.file_not_exist))
                         }
+
                         KeyApp.FILE_NAME_EXIST -> {
                             homeActivity.showToast(getString(R.string.new_name_already_exists))
                         }
+
                         KeyApp.RENAME_SUCCESS -> {
                             recentList[position].name = newName
                             recentAdapter.notifyItemChanged(position)
+                            homeActivity.fileViewModel.refreshScan(homeActivity)
                         }
+
                         else -> {
                             homeActivity.showToast(getString(R.string.rename_failed_please_try_again))
                         }
@@ -322,13 +320,17 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
     }
 
     private fun handleOpenFile(file: FilesModel) {
-        val intent = if (file.type != KeyApp.PDF) {
-            Intent(homeActivity, ViewActivity::class.java)
-        } else {
-            Intent(homeActivity, PdfActivity::class.java)
-        }
+        homeActivity.handleCheckOpenFile(file) { status ->
+            if (status == StatusOpenFile.FileExist) {
+                val intent = if (file.type != KeyApp.PDF) {
+                    Intent(homeActivity, ViewActivity::class.java)
+                } else {
+                    Intent(homeActivity, PdfActivity::class.java)
+                }
 //        homeActivity.fileViewModel.updateRecentFile(file.id, true)
-        intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
-        startActivity(intent)
+                intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+                startActivity(intent)
+            }
+        }
     }
 }

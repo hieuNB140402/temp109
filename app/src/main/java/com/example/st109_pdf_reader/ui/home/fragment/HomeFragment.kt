@@ -141,7 +141,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 if (!isScan) {
                     homeActivity.startIntentFromLeft(GalleryActivity::class.java)
                 } else {
-                    homeActivity.startIntentFromLeft(GalleryActivity::class.java, true)
+                    homeActivity.startIntentFromLeft(GalleryActivity::class.java, KeyApp.KeyIntent.SCAN_KEY, true)
                 }
             }
         } else {
@@ -239,10 +239,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
             onCameraClick = {
                 checkPermissionCamera(true)
+                dismiss()
+                homeActivity.hideNavigation()
             }
 
             onGalleryClick = {
                 checkPermissionStorage(true)
+                dismiss()
+                homeActivity.hideNavigation()
             }
             onDismissClick = {
                 dismiss()

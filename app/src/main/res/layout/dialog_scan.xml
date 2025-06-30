@@ -45,7 +45,7 @@
                     <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="3.5">
+                        android:layout_weight="3">
 
                         <ImageView
                             android:layout_width="24dp"
@@ -59,7 +59,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="16dp"
-                        android:layout_weight="6.5"
+                        android:layout_weight="7"
                         android:fontFamily="@font/roboto_regular"
                         android:gravity="center_vertical|start"
                         android:text="@string/scan_from_camera"
@@ -88,7 +88,7 @@
                     <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="3.5">
+                        android:layout_weight="3">
 
                         <ImageView
                             android:layout_width="24dp"
@@ -102,7 +102,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="16dp"
-                        android:layout_weight="6.5"
+                        android:layout_weight="7"
                         android:fontFamily="@font/roboto_regular"
                         android:gravity="center_vertical|start"
                         android:text="@string/scan_from_gallery"

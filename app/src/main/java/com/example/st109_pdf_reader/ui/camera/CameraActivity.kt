@@ -230,6 +230,7 @@ class CameraActivity : BaseActivity<ActivityCameraBinding>() {
                                             val intent = Intent(this@CameraActivity, PdfActivity::class.java).apply {
                                                 putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
                                                 putExtra(KeyApp.KeyIntent.CREATE_KEY, true)
+                                                putExtra(KeyApp.KeyIntent.SCAN_KEY, true)
                                             }
                                             dismissLoading()
                                             startActivity(intent)

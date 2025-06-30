@@ -16,6 +16,7 @@ import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -446,32 +447,24 @@ fun copyFileInternalToExternal(context: Context, fileName: String): Boolean {
 
 fun Activity.copyFileToExternal(fileName: String, status: ((String, Boolean) -> Unit)) {
     // Kiểm tra quyền cho Android 9 trở xuống
-    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P && ContextCompat.checkSelfPermission(
-            this, Manifest.permission.WRITE_EXTERNAL_STORAGE
-        ) != PackageManager.PERMISSION_GRANTED
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+        ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        != PackageManager.PERMISSION_GRANTED
     ) {
-        // Yêu cầu quyền (cần xử lý trong Activity)
         status.invoke("", false)
         return
     }
 
-    // File nguồn: /data/user/0/com.example.st109_pdf_reader/files/My PDF/{fileName}
     val sourceFile = File(filesDir, "${KeyApp.FOLDER_CREATE_PDF}/$fileName")
     if (!sourceFile.exists() || !sourceFile.isFile) {
         status.invoke("", false)
         return
     }
 
-    // Thư mục đích: /storage/emulated/0/Documents/MyPDF
     val destDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-    if (!destDir.exists()) {
-        destDir.mkdirs() // Tạo thư mục đích nếu chưa tồn tại
-    }
-
-    // File đích
+    if (!destDir.exists()) destDir.mkdirs()
     val destFile = File(destDir, fileName)
 
-    // Sao chép file
     try {
         FileInputStream(sourceFile).use { fis ->
             FileOutputStream(destFile).use { fos ->
@@ -482,11 +475,23 @@ fun Activity.copyFileToExternal(fileName: String, status: ((String, Boolean) -> 
                 }
             }
         }
+
+        // ✅ Quét lại file để MediaStore nhận diện
+        MediaScannerConnection.scanFile(
+            this,
+            arrayOf(destFile.absolutePath),
+            arrayOf("application/pdf")
+        ) { path, uri ->
+            Log.i("nbhieu", "MediaScanner: scanned -> $path | $uri")
+        }
+
         status.invoke(destFile.absolutePath, true)
     } catch (e: IOException) {
         e.printStackTrace()
+        status.invoke("", false)
     }
 }
+
 
 fun createPdfFromTextInternal(context: Context, text: String): FilesModel {
     val fileName = generateRandomString()

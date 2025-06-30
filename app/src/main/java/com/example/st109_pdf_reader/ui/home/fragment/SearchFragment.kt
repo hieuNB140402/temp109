@@ -12,6 +12,7 @@ import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseFragment
 import com.example.st109_pdf_reader.core.extensions.*
 import com.example.st109_pdf_reader.core.utils.KeyApp
+import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
 import com.example.st109_pdf_reader.databinding.FragmentSearchBinding
@@ -21,6 +22,7 @@ import com.example.st109_pdf_reader.ui.home.adapter.TypeFileSearchAdapter
 import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.io.File
 
 class SearchFragment : BaseFragment<FragmentSearchBinding>() {
 
@@ -45,6 +47,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>() {
     override fun initView() {
         initRecyclerViews()
         searchFiles(query)
+        binding.swrType.setColorSchemeResources(R.color.red_end)
     }
 
     override fun viewListener() {
@@ -53,6 +56,10 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>() {
                 homeActivity.supportFragmentManager.popBackStack()
                 homeActivity.isFragmentOther = false
             }
+        }
+        binding.swrType.setOnRefreshListener {
+            homeActivity.fileViewModel.refreshScan(requireActivity())
+            binding.swrType.isRefreshing = false
         }
         handleRcv()
         handleSearch()
@@ -84,9 +91,7 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>() {
         searchAdapter.onItemClick = { file -> handleOpenFile(file) }
         binding.rcvFile.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-                return if (e.action == MotionEvent.ACTION_UP &&
-                    rv.findChildViewUnder(e.x, e.y) == null
-                ) {
+                return if (e.action == MotionEvent.ACTION_UP && rv.findChildViewUnder(e.x, e.y) == null) {
                     hideKeyBoard()
                     true
                 } else {
@@ -187,13 +192,17 @@ class SearchFragment : BaseFragment<FragmentSearchBinding>() {
     }
 
     private fun handleOpenFile(file: FilesModel) {
-        val intent = if (file.type != KeyApp.PDF) {
-            Intent(homeActivity, ViewActivity::class.java)
-        } else {
-            Intent(homeActivity, PdfActivity::class.java)
+        homeActivity.handleCheckOpenFile(file) { status ->
+            if (status == StatusOpenFile.FileExist) {
+                val intent = if (file.type != KeyApp.PDF) {
+                    Intent(homeActivity, ViewActivity::class.java)
+                } else {
+                    Intent(homeActivity, PdfActivity::class.java)
+                }
+                homeActivity.fileViewModel.updateRecentFile(file.id, true)
+                intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+                startActivity(intent)
+            }
         }
-        homeActivity.fileViewModel.updateRecentFile(file.id, true)
-        intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
-        startActivity(intent)
     }
 }

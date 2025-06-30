@@ -19,18 +19,25 @@
         tools:itemCount="4"
         tools:listitem="@layout/item_type_file" />
 
-    <!-- rcvFile -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rcvFile"
+    <!-- swrType -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swrType"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:orientation="vertical"
-        android:paddingHorizontal="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rcvTypeFile"
-        tools:listitem="@layout/item_reader" />
+        app:layout_constraintTop_toBottomOf="@id/rcvTypeFile">
+        <!-- rcvFile -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcvFile"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_reader" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
     <!-- layoutNoItem -->
     <LinearLayout

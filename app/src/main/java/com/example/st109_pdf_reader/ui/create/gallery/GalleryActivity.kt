@@ -169,6 +169,7 @@ class GalleryActivity : BaseActivity<ActivityGalleryBinding>() {
                         val intent = Intent(this@GalleryActivity, PdfActivity::class.java).apply {
                             putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
                             putExtra(KeyApp.KeyIntent.CREATE_KEY, true)
+                            putExtra(KeyApp.KeyIntent.SCAN_KEY, true)
                         }
                         dismissLoading()
                         startActivity(intent)

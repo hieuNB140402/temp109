@@ -80,8 +80,10 @@
     <string name="this_app_needs_read_storage_permission_to_use_all_functions">This app needs read storage permission to use all functions</string>
     <string name="home">Home</string>
     <string name="recent">Recent</string>
+    <string name="recent_files">Recent Files</string>
     <string name="bookmark">Bookmark</string>
     <string name="saved">Saved</string>
+    <string name="saved_files">Saved Files</string>
     <string name="pdf_reader">PDF Reader</string>
     <string name="scan_text_to_pdf">Scan Text To PDF</string>
     <string name="easily_create_pdf_files_by_scanning_camera">Easily create pdf files by scanning camera</string>
@@ -116,7 +118,7 @@
     <string name="search_file">Search file...</string>
     <string name="no_item_here">No Item Here</string>
 
-    <string name="count_item_selected">%d item selected</string>
+    <string name="count_item_selected">%d Selected</string>
     <string name="clear_all">Clear All</string>
     <string name="from_camera">From Camera</string>
     <string name="from_gallery">From Gallery</string>
@@ -150,4 +152,9 @@
     <string name="all_file">All File</string>
     <string name="new_name_already_exists">New name already exists</string>
     <string name="rename_failed_please_try_again">Rename failed, please try again</string>
+    <string name="page_not_found">Page not found!</string>
+    <string name="of">of</string>
+    <string name="file_saved_successfully">File saved successfully</string>
+    <string name="file_does_not_exist_please_refresh_data">File does not exist! Please refresh data</string>
+    <string name="page_created_with_images_text_not_recognized">Page created with images, text not recognized</string>
 </resources>

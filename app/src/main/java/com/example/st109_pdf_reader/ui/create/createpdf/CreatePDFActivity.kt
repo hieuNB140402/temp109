@@ -287,15 +287,11 @@ class CreatePDFActivity : BaseActivity<ActivityCreatePdfBinding>() {
         CoroutineScope(Job() + Dispatchers.IO).launch {
             showLoading()
             val bitmapOriginList = convertPathsToBitmaps(
-                context = this@CreatePDFActivity,
-                paths = imageList.map { it.path }
-            )
+                context = this@CreatePDFActivity, paths = imageList.map { it.path })
 
             val name = generateRandomString()
             val path = createPdfFromBitmapsInternal(
-                this@CreatePDFActivity,
-                bitmapOriginList.toCollection(ArrayList<Bitmap>()),
-                name
+                this@CreatePDFActivity, bitmapOriginList.toCollection(ArrayList<Bitmap>()), name
             )
             val file = FilesModel(0, "PDF", name, path!!, 0, "", "")
             withContext(Dispatchers.Main) {

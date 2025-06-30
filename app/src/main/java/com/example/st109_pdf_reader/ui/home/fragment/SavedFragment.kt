@@ -17,6 +17,7 @@ import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
+import com.example.st109_pdf_reader.core.extensions.handleCheckOpenFile
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
@@ -26,6 +27,7 @@ import com.example.st109_pdf_reader.core.extensions.shareFile
 import com.example.st109_pdf_reader.core.extensions.showToast
 import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.KeyApp
+import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
@@ -49,8 +51,7 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
         get() = activity as HomeActivity
 
     override fun setViewBinding(
-        inflater: LayoutInflater,
-        container: ViewGroup?
+        inflater: LayoutInflater, container: ViewGroup?
     ): FragmentSavedBinding {
         return FragmentSavedBinding.inflate(inflater, container, false)
     }
@@ -58,9 +59,14 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
     override fun initView() {
         initRcv()
         convertToSaved()
+        binding.swrType.setColorSchemeResources(R.color.red_end)
     }
 
     override fun viewListener() {
+        binding.swrType.setOnRefreshListener {
+            homeActivity.fileViewModel.refreshScan(requireActivity())
+            binding.swrType.isRefreshing = false
+        }
         handleRcv()
     }
 
@@ -86,7 +92,7 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
     override fun onResume() {
         super.onResume()
         updateHeaderBackground()
-        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.saved)
+        homeActivity.binding.actionBar.tvCenter.text = getString(R.string.saved_files)
     }
 
     private fun handleRcv() {
@@ -137,7 +143,8 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
     private fun handleMoreMyDesign(file: FilesModel, position: Int, view: View) {
         val popupBinding = PopupReaderBinding.inflate(LayoutInflater.from(homeActivity))
         val popupWindow = PopupWindow(
-            popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true)
+            popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
+        )
         popupWindow.elevation = 10f
 
         popupBinding.tvOpenFile.select()
@@ -171,8 +178,7 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
         val distanceToBottom = screenHeight - viewY - view.height
         if (distanceToBottom >= homeActivity.dpToPx(180)) {
             popupWindow.showAsDropDown(view, xOffset, yOffset)
-        }
-        else {
+        } else {
             popupWindow.showAsDropDown(view, xOffset, homeActivity.dpToPx(-135))
         }
     }
@@ -180,7 +186,8 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
     private fun handleDelete(path: String, position: Int, popupWindow: PopupWindow) {
         popupWindow.dismiss()
         val confirmDialog = ConfirmDialog(
-            homeActivity, R.string.delete, R.string.do_you_want_to_delete_this_file)
+            homeActivity, R.string.delete, R.string.do_you_want_to_delete_this_file
+        )
         SystemUtils.setLocale(homeActivity)
         confirmDialog.show()
         confirmDialog.onNoClick = {
@@ -191,20 +198,19 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
             confirmDialog.dismiss()
             if (!File(path).exists()) {
                 homeActivity.showToast(getString(R.string.file_not_exist))
-            }
-            else {
-                homeActivity.handleDeleteFile(homeActivity.loadingDialog, homeActivity.fileViewModel, path, onFinish = { status ->
-                    if (status) {
-                        savedList.removeAt(position)
-                        savedAdapter.submitList(savedList)
-                    }
-                    else {
-                        homeActivity.showToast(getString(R.string.file_not_exist))
-                    }
-                    lifecycleScope.launch {
-                        (activity as HomeActivity).dismissLoading()
-                    }
-                })
+            } else {
+                homeActivity.handleDeleteFile(
+                    homeActivity.loadingDialog, homeActivity.fileViewModel, path, onFinish = { status ->
+                        if (status) {
+                            savedList.removeAt(position)
+                            savedAdapter.submitList(savedList)
+                        } else {
+                            homeActivity.showToast(getString(R.string.file_not_exist))
+                        }
+                        lifecycleScope.launch {
+                            (activity as HomeActivity).dismissLoading()
+                        }
+                    })
             }
 
         }
@@ -224,38 +230,52 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
             val extensionArray = file.path.split(".")
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
-            renameFileByPath(homeActivity.loadingDialog, homeActivity.fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
-                when(status){
-                    KeyApp.FILE_NOT_EXIST -> {
-                        homeActivity.showToast(getString(R.string.file_not_exist))
-                    }
-                    KeyApp.FILE_NAME_EXIST -> {
-                        homeActivity.showToast(getString(R.string.new_name_already_exists))
-                    }
-                    KeyApp.RENAME_SUCCESS -> {
-                        savedList[position].name = newName
-                        savedAdapter.notifyItemChanged(position)
-                    }
-                    else -> {
-                        homeActivity.showToast(getString(R.string.rename_failed_please_try_again))
-                    }
-                }
+            renameFileByPath(
+                homeActivity,
+                homeActivity.loadingDialog,
+                homeActivity.fileViewModel,
+                file.path,
+                newNameWithExtension,
+                onFinish = { status ->
+                    when (status) {
+                        KeyApp.FILE_NOT_EXIST -> {
+                            homeActivity.showToast(getString(R.string.file_not_exist))
+                        }
 
-                lifecycleScope.launch {
-                    homeActivity.dismissLoading()
-                }
-            })
+                        KeyApp.FILE_NAME_EXIST -> {
+                            homeActivity.showToast(getString(R.string.new_name_already_exists))
+                        }
+
+                        KeyApp.RENAME_SUCCESS -> {
+                            savedList[position].name = newName
+                            savedAdapter.notifyItemChanged(position)
+                            homeActivity.fileViewModel.refreshScan(homeActivity)
+                        }
+
+                        else -> {
+                            homeActivity.showToast(getString(R.string.rename_failed_please_try_again))
+                        }
+                    }
+
+                    lifecycleScope.launch {
+                        homeActivity.dismissLoading()
+                    }
+                })
         }
     }
 
     private fun handleOpenFile(file: FilesModel) {
-        val intent = if (file.type != KeyApp.PDF) {
-            Intent(homeActivity, ViewActivity::class.java)
-        } else {
-            Intent(homeActivity, PdfActivity::class.java)
+        homeActivity.handleCheckOpenFile(file) { status ->
+            if (status == StatusOpenFile.FileExist) {
+                val intent = if (file.type != KeyApp.PDF) {
+                    Intent(homeActivity, ViewActivity::class.java)
+                } else {
+                    Intent(homeActivity, PdfActivity::class.java)
+                }
+                homeActivity.fileViewModel.updateRecentFile(file.id, true)
+                intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+                startActivity(intent)
+            }
         }
-        homeActivity.fileViewModel.updateRecentFile(file.id, true)
-        intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
-        startActivity(intent)
     }
 }

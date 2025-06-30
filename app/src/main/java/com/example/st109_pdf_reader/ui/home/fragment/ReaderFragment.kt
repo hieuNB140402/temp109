@@ -21,6 +21,7 @@ import com.example.st109_pdf_reader.core.extensions.backFragmentSlideInFromLeft
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
+import com.example.st109_pdf_reader.core.extensions.handleCheckOpenFile
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
@@ -34,6 +35,7 @@ import com.example.st109_pdf_reader.core.extensions.sortByNameAZ
 import com.example.st109_pdf_reader.core.extensions.sortByNameZA
 import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.KeyApp
+import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.databinding.FragmentReaderBinding
@@ -69,6 +71,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     override fun initView() {
         initActionBar()
         initData()
+        binding.swrType.setColorSchemeResources(R.color.red_end)
     }
 
     override fun viewListener() {
@@ -88,6 +91,11 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                     }
                 }
             }
+            binding.swrType.setOnRefreshListener {
+                homeActivity.fileViewModel.refreshScan(requireActivity())
+                binding.swrType.isRefreshing = false
+            }
+
             layoutSort.setOnSingleClick { it.gone() }
             layoutActionBar.setOnSingleClick { resetLongClick() }
             btnShare.setOnSingleClick { handleShare() }
@@ -404,10 +412,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             it.isSelected = false
             it.isShow = false
         }
-
         submitAdapter()
-
-
         binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_sort)
         binding.actionBar.tvCenter.text = getString(R.string.pdf_reader)
         binding.layoutBottom.gone()
@@ -594,6 +599,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             val newNameWithExtension = "${newName}.${extension}"
             homeActivity.dLog("newNameWithExtension: ${newNameWithExtension}")
             renameFileByPath(
+                homeActivity,
                 homeActivity.loadingDialog,
                 homeActivity.fileViewModel,
                 file.path,
@@ -611,6 +617,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                         KeyApp.RENAME_SUCCESS -> {
                             fileList[position].name = newName
                             submitAdapter()
+                            homeActivity.fileViewModel.refreshScan(homeActivity)
                         }
 
                         else -> {
@@ -626,13 +633,17 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     }
 
     private fun handleClickItem(file: FilesModel) {
-        val intent = if (file.type != KeyApp.PDF) {
-            Intent(requireActivity(), ViewActivity::class.java)
-        } else {
-            Intent(requireActivity(), PdfActivity::class.java)
+        homeActivity.handleCheckOpenFile(file) { status ->
+            if (status == StatusOpenFile.FileExist) {
+                val intent = if (file.type != KeyApp.PDF) {
+                    Intent(requireActivity(), ViewActivity::class.java)
+                } else {
+                    Intent(requireActivity(), PdfActivity::class.java)
+                }
+                homeActivity.fileViewModel.updateRecentFile(file.id, true)
+                intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+                startActivity(intent)
+            }
         }
-        homeActivity.fileViewModel.updateRecentFile(file.id, true)
-        intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
-        startActivity(intent)
     }
 }

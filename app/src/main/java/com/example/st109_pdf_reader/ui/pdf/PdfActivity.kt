@@ -99,6 +99,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
     private var isHighlight = false
     private var isDraw = false
     private var isEdit = false
+    private var isScan = false
 
     override fun setViewBinding(): ActivityPdfBinding {
         return ActivityPdfBinding.inflate(LayoutInflater.from(this))
@@ -106,6 +107,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     override fun initView() {
         initData()
+        binding.btnSpeech.tag = R.drawable.ic_speech_on
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -115,11 +117,10 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                 btnActionBarLeft.setOnSingleClick { handleBack() }
                 btnActionBarRight.setOnSingleClick { handleTopRight(it) }
             }
-            btnSpeech.setOnSingleClick {
-                handleSpeech()
-            }
+            btnSpeech.setOnSingleClick { handleSpeech() }
             btnEdit.setOnSingleClick { handlePopupBottom(it) }
             btnHighlight.setOnSingleClick { onSaveOption(AcceptMode.Highlight) }
+            btnSearch.setOnSingleClick { handleSearch() }
         }
     }
 
@@ -152,6 +153,8 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         file = getFile!!
 
         isCreate = intent.getBooleanExtra(KeyApp.KeyIntent.CREATE_KEY, false)
+        isScan = intent.getBooleanExtra(KeyApp.KeyIntent.SCAN_KEY, false)
+
         dLog("isCreate: ${isCreate}")
         if (isCreate) {
             binding.apply {
@@ -192,7 +195,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
     @SuppressLint("SetTextI18n")
     private fun createUI() {
         if (core != null) {
-//            binding.tvCount.text = "1 " + getString(R.string.of) + " ${core!!.countPages()}"
+            binding.tvPageSelected.text = "1 " + getString(R.string.of) + " ${core!!.countPages()}"
 
             val r0: MuPDFReaderView = object : MuPDFReaderView(this) {
                 override fun onDocMotion() {
@@ -201,7 +204,8 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                 override fun onMoveToChild(i: Int) {
                     if (core != null) {
                         val i2 = i + 1
-//                        binding.tvCount.text = "$i2 " + getString(R.string.of) + " ${core!!.countPages()}"
+                        binding.tvPageSelected.text = "$i2 " + getString(R.string.of) + " ${core!!.countPages()}"
+                        pauseTTS()
                         super.onMoveToChild(i)
                     }
                 }
@@ -231,7 +235,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             binding.rlViewPdf.addView(mDocView)
             mDocView?.setMode(MuPDFReaderView.Mode.Viewing)
 
-//            binding.tvCount.tap {
+//            binding.tvPageSelected.tap {
 //                mDocView?.refresh(false)
 //            }
         }
@@ -277,20 +281,26 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
     }
 
     private fun handleSpeech() {
-        CoroutineScope(Job() + Dispatchers.IO).launch {
-            var bitmap: Bitmap? = null
-            val job1 = async {
-                bitmap = createBimapFromView(binding.rlViewPdf)
-                return@async true
-            }
-            launch(Dispatchers.Main) {
-                if (job1.await()) {
-                    recognizeTextFromBitmap(bitmap!!) { text ->
-                        dLog("text: $text")
-                        speakText(text)
+        if (binding.btnSpeech.tag == R.drawable.ic_speech_on) {
+            CoroutineScope(Job() + Dispatchers.IO).launch {
+                var bitmap: Bitmap? = null
+                val job1 = async {
+                    bitmap = createBimapFromView(binding.rlViewPdf)
+                    return@async true
+                }
+                launch(Dispatchers.Main) {
+                    if (job1.await()) {
+                        recognizeTextFromBitmap(bitmap!!) { text ->
+                            dLog("text: $text")
+                            binding.btnSpeech.setImageResource(R.drawable.ic_stop_speech)
+                            binding.btnSpeech.tag = R.drawable.ic_stop_speech
+                            speakText(text)
+                        }
                     }
                 }
             }
+        } else {
+            pauseTTS()
         }
     }
 
@@ -305,6 +315,9 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         if (currentIndex < textList.size) {
             val text = textList[currentIndex]
             textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, currentIndex.toString())
+        } else {
+            binding.btnSpeech.setImageResource(R.drawable.ic_speech_on)
+            binding.btnSpeech.tag = R.drawable.ic_speech_on
         }
     }
 
@@ -312,11 +325,15 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
     fun pauseTTS() {
         isPaused = true
         textToSpeech.stop()
+        binding.btnSpeech.setImageResource(R.drawable.ic_speech_on)
+        binding.btnSpeech.tag = R.drawable.ic_speech_on
     }
 
     fun resumeTTS() {
         isPaused = false
         speakNext()
+        binding.btnSpeech.setImageResource(R.drawable.ic_stop_speech)
+        binding.btnSpeech.tag = R.drawable.ic_stop_speech
     }
 
     private fun handlePopupBottom(view: View) {
@@ -371,21 +388,25 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     private fun handleHighLight(isClose: Boolean = false) {
         binding.apply {
-            if (!isClose) {
-                actionBar.tvCenter.text = getString(R.string.highlight)
-                actionBar.btnActionBarRight.invisible()
-                btnEdit.gone()
-                btnSpeech.gone()
-                btnHighlight.visible()
-                isHighlight = true
-                pauseTTS()
-                lifecycleScope.launch {
-                    binding.tvHelpHighlight.visible()
-                    delay(5000)
-                    binding.tvHelpHighlight.gone()
+            if (!isCreate || isScan) {
+                if (!isClose) {
+                    actionBar.tvCenter.text = getString(R.string.highlight)
+                    actionBar.btnActionBarRight.invisible()
+                    btnEdit.gone()
+                    btnSpeech.gone()
+                    btnHighlight.visible()
+                    isHighlight = true
+                    pauseTTS()
+                    lifecycleScope.launch {
+                        binding.tvHelpHighlight.visible()
+                        delay(5000)
+                        binding.tvHelpHighlight.gone()
+                    }
+                } else {
+                    onSaveOption(AcceptMode.View)
                 }
             } else {
-                onSaveOption(AcceptMode.View)
+                showToast(getString(R.string.page_created_with_images_text_not_recognized))
             }
         }
     }
@@ -414,6 +435,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                 actionBar.btnActionBarRight.setImageResource(R.drawable.ic_done_white)
                 btnEdit.gone()
                 btnSpeech.gone()
+                layoutPageSelected.gone()
             }
             mDocView?.setMode(MuPDFReaderView.Mode.Drawing)
         } else {
@@ -422,6 +444,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             binding.apply {
                 actionBar.btnActionBarRight.setImageResource(R.drawable.ic_save_create)
                 btnEdit.visible()
+                layoutPageSelected.visible()
                 if (!isCreate) {
                     btnSpeech.visible()
                 }
@@ -455,13 +478,16 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                 handlePopupTop(view)
             }
 
-            isEdit && !isCreate -> {
+            isEdit -> {
                 dLog("in")
                 val muPDFCore: MuPDFCore? = core
                 if (muPDFCore != null && muPDFCore.hasChanges()) {
                     lifecycleScope.launch {
                         core?.save()
-                        dLog("Success")
+                        showToast(getString(R.string.file_saved_successfully))
+                        fileViewModel.refreshScan(this@PdfActivity)
+                        delay(1000)
+                        handleBackLeftToRight()
                     }
                 }
             }
@@ -472,7 +498,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun handleSetName() {
-        val dialog = RenameDialog(this, "", KeyApp.SAVE_FILE)
+        val dialog = RenameDialog(this, file.name, KeyApp.SAVE_FILE)
         SystemUtils.setLocale(this)
 
         dialog.apply {
@@ -516,7 +542,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                                 withContext(Dispatchers.Main) {
                                     dismissLoading()
                                     if (getStatus) {
-                                        val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+                                        val date = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault()).format(Date())
                                         val time = LocalTime.now()
                                             .format(DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault()))
                                         dLog("size: ${File(getPath).length()}")
@@ -532,11 +558,10 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                                         )
                                         fileViewModel.insertFileIfNotExists(fileModel) { onResult ->
                                             if (onResult) {
-                                                file.name = name
                                                 val newPathInternal = File(
-                                                    filesDir,
-                                                    "${KeyApp.FOLDER_CREATE_PDF}/${file.name}.${extensionOld}"
+                                                    filesDir, "${KeyApp.FOLDER_CREATE_PDF}/${file.name}.${extensionOld}"
                                                 )
+                                                file.name = name
                                                 file.path = newPathInternal.toString()
                                                 dLog("newPathInternal: ${newPathInternal}")
                                                 dismiss()
@@ -545,6 +570,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                                                 intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, fileModel)
                                                 startActivity(intent)
 //                                                fileViewModel.refreshScan(this@PdfActivity)
+
                                             } else {
                                                 showToast(getString(R.string.save_fail))
                                             }
@@ -632,6 +658,9 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                     binding.apply {
                         actionBar.tvCenter.text = file.name
                         actionBar.btnActionBarRight.visible()
+                        if (isEdit) {
+                            actionBar.btnActionBarRight.setImageResource(R.drawable.ic_save_create)
+                        }
                         btnEdit.visible()
                         if (!isCreate) {
                             btnSpeech.visible()
@@ -769,17 +798,21 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(
-                loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
-                    when(status){
+                this, loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
+                    when (status) {
                         KeyApp.FILE_NOT_EXIST -> {
                             showToast(getString(R.string.file_not_exist))
                         }
+
                         KeyApp.FILE_NAME_EXIST -> {
                             showToast(getString(R.string.new_name_already_exists))
                         }
+
                         KeyApp.RENAME_SUCCESS -> {
                             binding.actionBar.tvCenter.text = newName
+                            fileViewModel.refreshScan(this)
                         }
+
                         else -> {
                             showToast(getString(R.string.rename_failed_please_try_again))
                         }
@@ -823,6 +856,31 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         }
     }
 
+    private fun handleSearch() {
+        val searchDialog = RenameDialog(this, "", type = KeyApp.SEARCH_FILE)
+        SystemUtils.setLocale(this)
+        searchDialog.apply {
+            show()
+            onNoClick = {
+                dismiss()
+                hideNavigation()
+            }
+            onYesClick = { value ->
+                val page = value.toInt()
+                core?.let {
+                    if (page > it.countPages() || page == 0) {
+                        showToast(getString(R.string.page_not_found))
+                    } else {
+                        mDocView?.displayedViewIndex = page - 1
+                        dismiss()
+                        hideNavigation()
+                    }
+                } ?: showToast(getString(R.string.page_not_found))
+
+            }
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (::textToSpeech.isInitialized) {
@@ -838,6 +896,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     override fun onRestart() {
         super.onRestart()
+        binding.actionBar.tvCenter.text = file.name
         resumeTTS()
     }
 }

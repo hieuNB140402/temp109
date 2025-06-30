@@ -99,19 +99,19 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
                 val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
                 intent.data = ("package:$packageName").toUri()
                 startActivity(intent)
-            }
-            else {
+            } else {
                 initData()
             }
-        }else{
-            if (checkPermissions(storagePermission)){
+        } else {
+            if (checkPermissions(storagePermission)) {
                 initData()
-            }else{
+            } else {
                 goToSettings()
             }
         }
     }
-    private fun initData(){
+
+    private fun initData() {
         val dao = AppDatabase.getInstance(this).fileDao()
         val repository = FileRepository(dao)
 
@@ -689,6 +689,7 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(
+                this,
                 loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
                     when (status) {
                         KeyApp.FILE_NOT_EXIST -> {

@@ -6,6 +6,7 @@ import android.app.Fragment
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.util.Log
@@ -23,8 +24,10 @@ import com.document.allreader.allofficefilereader.utils.FileUtils.context
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.dialog.LoadingDialog
 import com.example.st109_pdf_reader.core.utils.KeyApp
+import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.core.utils.SystemUtils.lastClickTime
+import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -36,6 +39,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 internal fun View.visible() {
     visibility = View.VISIBLE
@@ -63,22 +68,24 @@ internal fun View.select() {
 
 fun Activity.showSystemUI(white: Boolean) {
     if (white) {
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-    }
-    else {
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+    } else {
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
     }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         WindowCompat.setDecorFitsSystemWindows(window, false);
-    }
-    else {
+    } else {
         window.setFlags(
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        );
     }
 }
 
-fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, path: String, onFinish: ((Boolean) -> Unit)) {
+fun Activity.handleDeleteFile(
+    dialog: LoadingDialog, viewModel: FileViewModel, path: String, onFinish: ((Boolean) -> Unit)
+) {
     dialog.show()
     val handleExceptionCoroutine = CoroutineExceptionHandler { _, throwable ->
         Log.e("nbhieu", "handleDeleteFile: ${throwable.message}")
@@ -90,8 +97,7 @@ fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, p
             if (file.exists()) {
                 file.delete()
                 viewModel.deleteFileFromPath(path)
-            }
-            else {
+            } else {
                 return@async false
             }
             return@async true
@@ -99,8 +105,7 @@ fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, p
         launch(Dispatchers.Main) {
             if (job1.await() == true) {
                 onFinish.invoke(true)
-            }
-            else if (job1.await() == false) {
+            } else if (job1.await() == false) {
                 showToast(getString(R.string.file_not_exist))
                 onFinish.invoke(false)
             }
@@ -108,7 +113,9 @@ fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, p
     }
 }
 
-fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, listPath: ArrayList<String>, onFinish: ((Boolean) -> Unit)) {
+fun Activity.handleDeleteFile(
+    dialog: LoadingDialog, viewModel: FileViewModel, listPath: ArrayList<String>, onFinish: ((Boolean) -> Unit)
+) {
     dialog.show()
     val handleExceptionCoroutine = CoroutineExceptionHandler { _, throwable ->
         Log.e("nbhieu", "handleDeleteFile: ${throwable.message}")
@@ -118,8 +125,7 @@ fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, l
             val isNotExist = listPath.any { !File(it).exists() }
             if (isNotExist) {
                 return@async false
-            }
-            else {
+            } else {
                 listPath.forEach {
                     File(it).delete()
                     viewModel.deleteFileFromPath(it)
@@ -132,8 +138,7 @@ fun Activity.handleDeleteFile(dialog: LoadingDialog, viewModel: FileViewModel, l
                 Log.e("nbhieu", "job1.await(): true")
 
                 onFinish.invoke(true)
-            }
-            else if (job1.await() == false) {
+            } else if (job1.await() == false) {
                 Log.e("nbhieu", "job1.await(): false")
                 onFinish.invoke(false)
             }
@@ -178,7 +183,8 @@ fun Activity.shareFile(listFilePath: ArrayList<String>, isBlack: Boolean = false
 
     val uris = listFile.map { file ->
         FileProvider.getUriForFile(
-            this, "$packageName.provider", file)
+            this, "$packageName.provider", file
+        )
     }
 
     val shareIntent = if (uris.size == 1) {
@@ -187,8 +193,7 @@ fun Activity.shareFile(listFilePath: ArrayList<String>, isBlack: Boolean = false
             putExtra(Intent.EXTRA_STREAM, uris.first())
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-    }
-    else {
+    } else {
         Intent(Intent.ACTION_SEND_MULTIPLE).apply {
             type = "*/*"
             putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
@@ -228,6 +233,7 @@ internal fun shareImage(context: Context, imageUri: Uri) {
 }
 
 fun renameFileByPath(
+    context: Context,
     dialog: LoadingDialog,
     viewModel: FileViewModel,
     path: String,
@@ -247,19 +253,60 @@ fun renameFileByPath(
     CoroutineScope(Dispatchers.IO + SupervisorJob() + handler).launch {
         val resultCode = try {
             val oldFile = File(path)
-            val parentDir = oldFile.parent
+            val parentDir = oldFile.parentFile
             if (parentDir == null || !oldFile.exists()) {
                 KeyApp.FILE_NOT_EXIST
             } else {
-                val newPath = "$parentDir/$newNameWithExtension"
-                val newFile = File(newPath)
+                val newFile = File(parentDir, newNameWithExtension)
 
                 if (newFile.exists()) {
                     KeyApp.FILE_NAME_EXIST
                 } else {
-                    val renameSuccess = oldFile.renameTo(newFile)
+                    val renameSuccess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        // Android 11+ dùng rename trực tiếp
+                        oldFile.renameTo(newFile)
+                    } else {
+                        try {
+                            // ⏱ Lấy thời gian rename
+                            val now = System.currentTimeMillis()
+
+                            // Copy nội dung
+                            oldFile.inputStream().use { input ->
+                                newFile.outputStream().use { output ->
+                                    input.copyTo(output)
+                                }
+                            }
+
+                            // Gán lại thời gian sửa đổi
+                            newFile.setLastModified(now)
+
+                            // Xóa file cũ
+                            val deleted = oldFile.delete()
+
+                            // Cập nhật MediaStore
+                            MediaScannerConnection.scanFile(context, arrayOf(newFile.absolutePath), null, null)
+                            MediaScannerConnection.scanFile(context, arrayOf(oldFile.absolutePath), null, null)
+
+                            deleted && newFile.exists()
+                        } catch (e: Exception) {
+                            Log.e("nbhieu", "rename fallback error: ${e.message}", e)
+                            false
+                        }
+                    }
+
                     if (renameSuccess) {
+                        val newPath = newFile.absolutePath
+
+                        // Tính date và time tại thời điểm rename
+                        val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+                        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                        val date = dateFormat.format(newFile.lastModified())
+                        val time = timeFormat.format(newFile.lastModified())
+
+                        // Gọi ViewModel cập nhật
                         viewModel.renameFileByPath(path, newNameWithExtension, newPath)
+
+                        Log.i("nbhieu", "Rename success: $newPath ($date - $time)")
                         KeyApp.RENAME_SUCCESS
                     } else {
                         KeyApp.RENAME_FAIL
@@ -277,7 +324,6 @@ fun renameFileByPath(
         }
     }
 }
-
 
 
 internal fun Activity.handleBackLeftToRight() {
@@ -340,12 +386,12 @@ fun Context.handleBackFragmentFromRight() {
 
 internal fun Activity.hideNavigation(isBlack: Boolean = false) {
     window.setFlags(
-        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+    )
     if (!isBlack) {
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-    }
-    else {
+    } else {
         window.decorView.systemUiVisibility =
             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
     }
@@ -439,3 +485,11 @@ fun Activity.handleComeBackHome(address: Activity) {
     startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK))
 }
 
+fun Activity.handleCheckOpenFile(file: FilesModel, onAction: ((StatusOpenFile) -> Unit) = {}) {
+    if (File(file.path).exists()) {
+        onAction.invoke(StatusOpenFile.FileExist)
+    } else {
+        showToast(getString(R.string.file_does_not_exist_please_refresh_data))
+        onAction.invoke(StatusOpenFile.FileNotExist)
+    }
+}

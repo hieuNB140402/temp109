@@ -16,7 +16,7 @@ fun sortByNameZA(list: List<FilesModel>): List<FilesModel> {
 
 fun sortByDateOldToNew(list: List<FilesModel>): List<FilesModel> {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
         return list.sortedWith(compareBy({
@@ -40,7 +40,7 @@ fun sortByDateOldToNew(list: List<FilesModel>): List<FilesModel> {
 
 fun sortByDateNewToOld(list: List<FilesModel>): List<FilesModel> {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        val dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
         return list.sortedWith(compareByDescending<FilesModel> {

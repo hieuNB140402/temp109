@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     android:clickable="true"
     android:focusable="true"
-    android:background="@color/white"
     tools:context=".ui.home.fragment.SearchFragment">
     <!-- header -->
     <FrameLayout
@@ -63,20 +63,26 @@
         app:layout_constraintTop_toBottomOf="@id/header"
         tools:listitem="@layout/item_type_file_search" />
 
-    <!-- rcvFile -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rcvFile"
+    <!-- swrType -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swrType"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:paddingHorizontal="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rcvType"
-        tools:listitem="@layout/item_reader" />
+        app:layout_constraintTop_toBottomOf="@id/rcvType">
+        <!-- rcvFile -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcvFile"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_reader" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- layoutNoItem -->
     <LinearLayout

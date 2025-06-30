@@ -18,7 +18,8 @@ import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.databinding.DialogRenameBinding
 
 
-class RenameDialog(val context: Activity, val oldName: String, val type: String = KeyApp.RENAME) : BaseDialog<DialogRenameBinding>(context, maxWidth = true, maxHeight = true) {
+class RenameDialog(val context: Activity, val oldName: String, val type: String = KeyApp.RENAME) :
+    BaseDialog<DialogRenameBinding>(context, maxWidth = true, maxHeight = true) {
     override val layoutId: Int = R.layout.dialog_rename
     override val isCancel: Boolean = false
     override val isBack: Boolean = false
@@ -39,11 +40,24 @@ class RenameDialog(val context: Activity, val oldName: String, val type: String 
                 onNoClick?.invoke()
             }
             btnYes.setOnSingleClick {
-                if (edtRename.text.toString().trim() != "") {
-                    onYesClick?.invoke(edtRename.text.toString().trim())
-                }else{
-                    context.showToast(context.getString(R.string.please_input_text))
+                when (type) {
+                    KeyApp.SEARCH_FILE -> {
+                        if (edtRename.text.toString().trim() != "" || edtRename.text.toString().toInt() != 0) {
+                            onYesClick?.invoke(edtRename.text.toString().trim())
+                        } else {
+                            context.showToast(context.getString(R.string.please_input_text))
+                        }
+                    }
+
+                    else -> {
+                        if (edtRename.text.toString().trim() != "") {
+                            onYesClick?.invoke(edtRename.text.toString().trim())
+                        } else {
+                            context.showToast(context.getString(R.string.please_input_text))
+                        }
+                    }
                 }
+
             }
             btnDetele.setOnSingleClick {
                 edtRename.setText("")
@@ -52,8 +66,7 @@ class RenameDialog(val context: Activity, val oldName: String, val type: String 
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     context.hideSoftKeyboard()
                     true
-                }
-                else {
+                } else {
                     false
                 }
 
@@ -67,18 +80,22 @@ class RenameDialog(val context: Activity, val oldName: String, val type: String 
 
     private fun initText() {
         binding.apply {
-            when(type){
+            when (type) {
                 KeyApp.SAVE_FILE -> {
                     tvTitle.text = context.getString(R.string.save_file)
                     edtRename.hint = context.getString(R.string.enter_file_name)
+                    edtRename.setText(oldName)
                 }
+
                 KeyApp.SEARCH_FILE -> {
                     tvTitle.text = context.getString(R.string.search_page)
                     edtRename.hint = context.getString(R.string.enter_page_number)
                     edtRename.inputType = InputType.TYPE_CLASS_NUMBER
                 }
+
                 else -> {
                     edtRename.setText(oldName)
+                    edtRename.hint = context.getString(R.string.enter_file_name)
                 }
             }
             setGradientTextHeightColor(btnNo, "#F52C2C", "#B10C0C")
