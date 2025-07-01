@@ -157,4 +157,5 @@
     <string name="file_saved_successfully">Datei erfolgreich gespeichert</string>
     <string name="file_does_not_exist_please_refresh_data">Datei existiert nicht! Bitte aktualisieren Sie die Daten</string>
     <string name="page_created_with_images_text_not_recognized">Seite mit Bildern erstellt, Text nicht erkannt</string>
+    <string name="open_file">Datei öffnen</string>
 </resources>

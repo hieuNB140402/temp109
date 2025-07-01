@@ -157,4 +157,5 @@
     <string name="file_saved_successfully">File berhasil disimpan</string>
     <string name="file_does_not_exist_please_refresh_data">File tidak ada! Silakan segarkan data</string>
     <string name="page_created_with_images_text_not_recognized">Halaman dibuat dengan gambar, teks tidak dikenali</string>
+    <string name="open_file">Buka File</string>
 </resources>

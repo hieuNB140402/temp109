@@ -601,7 +601,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         if (distanceToBottom >= homeActivity.dpToPx(180)) {
             popupWindow.showAsDropDown(view, xOffset, yOffset)
         } else {
-            popupWindow.showAsDropDown(view, xOffset, homeActivity.dpToPx(-135))
+            popupWindow.showAsDropDown(view, xOffset, homeActivity.dpToPx(-220))
         }
     }
 

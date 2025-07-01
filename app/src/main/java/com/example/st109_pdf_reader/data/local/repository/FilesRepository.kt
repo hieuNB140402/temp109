@@ -66,8 +66,14 @@ class FileRepository(private val fileDao: FileDao) {
                     val path = it.getString(indexPath)
 
                     val file = File(path)
-                    if (!file.exists()) continue
-                    if (file.lastModified() < startDate) continue
+                    if (!file.exists()) {
+                        Log.e("nbhieu", "file not exist: $file")
+                        continue
+                    }
+                    if (file.lastModified() < startDate) {
+                        Log.e("nbhieu", "file < 2000: $file")
+                        continue
+                    }
 
                     val size = if (it.getLong(indexSize) == 0L) file.length() else it.getLong(indexSize)
 

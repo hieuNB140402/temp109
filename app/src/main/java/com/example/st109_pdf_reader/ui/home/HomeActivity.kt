@@ -2,20 +2,24 @@ package com.example.st109_pdf_reader.ui.home
 
 import android.R.attr.data
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
+import com.document.allreader.allofficefilereader.utils.FileUtils.context
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseActivity
 import com.example.st109_pdf_reader.core.dialog.RateDialog
@@ -25,6 +29,7 @@ import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.copySampleFilesToInternal
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.deleteTempDataFolder
+import com.example.st109_pdf_reader.core.extensions.eLog
 import com.example.st109_pdf_reader.core.extensions.getImageInternal
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
@@ -96,17 +101,34 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
 
     private fun checkPermissionToInit() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
-            if (!settingsDialog.isShowing) {
-                settingsDialog.show()
+            settingsDialog.show()
+            settingsDialog.onYesClick = {
+                settingsDialog.dismiss()
+                handleSettingDialog()
             }
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(storagePermission)) {
-            if (!settingsDialog.isShowing) {
-                settingsDialog.show()
+            settingsDialog.show()
+            settingsDialog.onYesClick = {
+                handleSettingDialog()
             }
         } else {
             settingsDialog.dismiss()
             hideNavigation()
             initData()
+        }
+    }
+
+    private fun handleSettingDialog() {
+        settingsDialog.dismiss()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = ("package:$packageName").toUri()
+            startActivity(intent)
+        } else {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = "package:${packageName}".toUri()
+            }
+            startActivity(intent)
         }
     }
 
@@ -349,4 +371,8 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
     }
 
 
+    override fun onDestroy() {
+        super.onDestroy()
+        eLog("onDestroy")
+    }
 }

@@ -33,16 +33,7 @@ class GoToSettingsDialog(val context: Activity) :
     override fun initAction() {
         binding.apply {
             btnGoToSettings.setOnSingleClick {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                    intent.data = ("package:$context.packageName").toUri()
-                    context.startActivity(intent)
-                }else{
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = "package:${context.packageName}".toUri()
-                    }
-                    context.startActivity(intent)
-                }
+                onYesClick?.invoke()
             }
         }
     }

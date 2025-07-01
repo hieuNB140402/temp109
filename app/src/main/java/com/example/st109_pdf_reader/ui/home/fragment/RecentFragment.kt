@@ -36,6 +36,7 @@ import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
 import com.example.st109_pdf_reader.ui.home.adapter.TypeFileAdapter
 import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
@@ -342,7 +343,8 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
                         }
                     }
                     lifecycleScope.launch {
-                        homeActivity.dismissLoading()
+                        delay(300)
+                        homeActivity.hideNavigation()
                     }
                 })
         }

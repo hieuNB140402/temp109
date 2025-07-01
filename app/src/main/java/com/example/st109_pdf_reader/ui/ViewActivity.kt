@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
@@ -101,14 +102,12 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
 
     private fun checkPermissionToInit() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
-            if (!settingsDialog.isShowing) {
-                isNotAccessPermission = false
-                settingsDialog.show()
+            settingsDialog.onYesClick = {
+                handleSettingDialog()
             }
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(SystemUtils.storagePermission)) {
-            if (!settingsDialog.isShowing) {
-                isNotAccessPermission = false
-                settingsDialog.show()
+            settingsDialog.onYesClick = {
+                handleSettingDialog()
             }
         } else {
             settingsDialog.dismiss()
@@ -116,7 +115,20 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
             initData()
         }
     }
-
+    private fun handleSettingDialog() {
+        isNotAccessPermission = false
+        settingsDialog.dismiss()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = ("package:$packageName").toUri()
+            startActivity(intent)
+        } else {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = "package:${packageName}".toUri()
+            }
+            startActivity(intent)
+        }
+    }
     private fun initData() {
         if (!isSampleFile) {
             binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_more_white)

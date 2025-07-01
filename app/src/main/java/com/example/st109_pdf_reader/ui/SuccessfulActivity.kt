@@ -105,6 +105,7 @@ class SuccessfulActivity : BaseActivity<ActivitySuccessfulBinding>() {
         startActivity(intent)
     }
 
+
     override fun onResume() {
         super.onResume()
         hideNavigation()

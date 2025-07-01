@@ -7,6 +7,7 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.DisplayMetrics
@@ -17,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupWindow
 import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.artifex.mupdfdemo.Annotation
@@ -163,19 +165,33 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     private fun checkPermissionToInit() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
-            if (!settingsDialog.isShowing) {
-                isNotAccessPermission = false
-                settingsDialog.show()
+            settingsDialog.onYesClick = {
+                handleSettingDialog()
             }
         } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(storagePermission)) {
-            if (!settingsDialog.isShowing) {
-                isNotAccessPermission = false
-                settingsDialog.show()
+            settingsDialog.onYesClick = {
+                handleSettingDialog()
             }
+
         } else {
             settingsDialog.dismiss()
             hideNavigation()
             initData()
+        }
+    }
+
+    private fun handleSettingDialog() {
+        isNotAccessPermission = false
+        settingsDialog.dismiss()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = ("package:$packageName").toUri()
+            startActivity(intent)
+        } else {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = "package:${packageName}".toUri()
+            }
+            startActivity(intent)
         }
     }
 
@@ -347,7 +363,6 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             binding.btnSpeech.tag = R.drawable.ic_speech_on
         }
     }
-
 
     fun pauseTTS() {
         isPaused = true
@@ -831,6 +846,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(
                 this, loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
+                    dLog("StatusRename: ${status}")
                     when (status) {
                         KeyApp.FILE_NOT_EXIST -> {
                             showToast(getString(R.string.file_not_exist))
@@ -934,6 +950,11 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         } else {
             checkPermissionToInit()
         }
+    }
+
+    @SuppressLint("MissingSuperCall")
+    override fun onBackPressed() {
+        handleBack()
     }
 
 }

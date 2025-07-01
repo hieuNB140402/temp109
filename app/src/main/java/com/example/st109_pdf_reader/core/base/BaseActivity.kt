@@ -49,7 +49,6 @@ abstract class BaseActivity<T : ViewBinding> : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         loadingDialog = LoadingDialog(this)
         settingsDialog = GoToSettingsDialog(this)
-
         initView()
         viewListener()
         dataObservable()

@@ -267,7 +267,7 @@ fun renameFileByPath(
                 if (newFile.exists()) {
                     KeyApp.FILE_NAME_EXIST
                 } else {
-                    val renameSuccess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val renameSuccess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         // Android 11+ dùng rename trực tiếp
                         oldFile.renameTo(newFile)
                     } else {

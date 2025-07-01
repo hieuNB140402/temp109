@@ -157,4 +157,5 @@
     <string name="file_saved_successfully">Archivo guardado exitosamente</string>
     <string name="file_does_not_exist_please_refresh_data">¡El archivo no existe! Por favor actualiza los datos</string>
     <string name="page_created_with_images_text_not_recognized">Página creada con imágenes, texto no reconocido</string>
+    <string name="open_file">Abrir archivo</string>
 </resources>

@@ -8,16 +8,15 @@
     android:background="@drawable/img_background_splash"
     tools:context=".ui.SplashActivity">
 
-    <com.google.android.material.imageview.ShapeableImageView
+    <ImageView
         android:id="@+id/imvImage"
-        android:layout_width="140dp"
-        android:layout_height="140dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="150dp"
-        android:src="@color/black"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:shapeAppearanceOverlay="@style/border_image_20" />
+        android:layout_marginHorizontal="110dp"
+        android:src="@drawable/img_splash"
+        android:adjustViewBounds="true"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:layout_width="match_parent"
