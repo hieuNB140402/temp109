@@ -108,7 +108,7 @@ object SystemUtils {
     fun getPreLanguage(context: Context): String {
         val preferences: SharedPreferences =
             context.getSharedPreferences("data", Context.MODE_PRIVATE)
-        return preferences.getString(KEY_LANGUAGE, "en") ?: "en"
+        return preferences.getString(KEY_LANGUAGE, "") ?: ""
     }
 
     fun getFirstLang(context: Context): Boolean {

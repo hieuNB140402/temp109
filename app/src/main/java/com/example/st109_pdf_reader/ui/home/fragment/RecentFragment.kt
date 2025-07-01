@@ -15,6 +15,7 @@ import com.example.st109_pdf_reader.core.dialog.RenameDialog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.handleCheckOpenFile
+import com.example.st109_pdf_reader.core.extensions.handleFileSample
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
 import com.example.st109_pdf_reader.core.extensions.select
@@ -29,6 +30,7 @@ import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
 import com.example.st109_pdf_reader.databinding.FragmentRecentBinding
 import com.example.st109_pdf_reader.databinding.PopupReaderBinding
+import com.example.st109_pdf_reader.ui.ViewActivity
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
 import com.example.st109_pdf_reader.ui.home.adapter.TypeFileAdapter
@@ -67,6 +69,7 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
     }
 
     override fun viewListener() {
+        binding.layoutSampleFile.setOnSingleClick { homeActivity.handleFileSample(type) }
         handleRcv()
     }
 
@@ -167,9 +170,34 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
 
     private fun checkListSize() {
         if (recentList.isEmpty()) {
-            binding.layoutNoItem.visible()
+            binding.layoutSampleFile.visible()
+            binding.rcvFile.gone()
+            val res = when (type) {
+                KeyApp.ALL_FILE -> {
+                    R.drawable.ic_pdf_reader
+                }
+
+                KeyApp.WORD -> {
+                    R.drawable.ic_word_reader
+                }
+
+                KeyApp.EXCEL -> {
+                    R.drawable.ic_excel_reader
+                }
+
+                KeyApp.PPT -> {
+                    R.drawable.ic_ppt_reader
+                }
+
+                else -> {
+                    R.drawable.ic_pdf_reader
+                }
+
+            }
+            binding.imvType.setImageResource(res)
         } else {
-            binding.layoutNoItem.gone()
+            binding.layoutSampleFile.gone()
+            binding.rcvFile.visible()
         }
     }
 
@@ -187,6 +215,7 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
         val popupWindow = PopupWindow(
             popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
         )
+        popupWindow.setOnDismissListener { homeActivity.hideNavigation() }
         popupWindow.elevation = 10f
 
         when (type) {
@@ -305,7 +334,7 @@ class RecentFragment : BaseFragment<FragmentRecentBinding>() {
                         KeyApp.RENAME_SUCCESS -> {
                             recentList[position].name = newName
                             recentAdapter.notifyItemChanged(position)
-                            homeActivity.fileViewModel.refreshScan(homeActivity)
+//                            homeActivity.fileViewModel.refreshScan(homeActivity)
                         }
 
                         else -> {

@@ -38,30 +38,66 @@
             tools:listitem="@layout/item_reader" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-
-    <!-- layoutNoItem -->
-    <LinearLayout
-        android:id="@+id/layoutNoItem"
+    <!-- layoutSampleFile -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutSampleFile"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_8_stroke_gray_solid_white"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/rcvTypeFile">
 
+        <!-- imvType -->
         <ImageView
-            android:id="@+id/imgImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:src="@drawable/img_no_item" />
+            android:id="@+id/imvType"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginVertical="11dp"
+            android:layout_marginStart="22dp"
+            android:src="@drawable/ic_word_reader"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- tvName -->
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tvName"
+            style="@style/single_marquee"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="16dp"
             android:fontFamily="@font/roboto_medium"
-            android:gravity="center"
-            android:text="@string/no_result_found"
+            android:gravity="start|center_vertical"
+            android:text="Sample"
             android:textColor="@color/black_2D"
-            android:textSize="16sp" />
-    </LinearLayout>
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imvType"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!--tvInformationOther -->
+        <TextView
+            android:id="@+id/tvInformationOther"
+            style="@style/single_marquee"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="14dp"
+            android:fontFamily="@font/roboto_regular"
+            android:gravity="start|center_vertical"
+            android:text="03/01/2020 | 13:45 | 133 KB"
+            android:textColor="#B22D2D2D"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imvType" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

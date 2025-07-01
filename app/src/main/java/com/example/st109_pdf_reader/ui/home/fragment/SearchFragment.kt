@@ -16,6 +16,7 @@ import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
 import com.example.st109_pdf_reader.databinding.FragmentSearchBinding
+import com.example.st109_pdf_reader.ui.ViewActivity
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.adapter.SearchAdapter
 import com.example.st109_pdf_reader.ui.home.adapter.TypeFileSearchAdapter

@@ -16,6 +16,7 @@ import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.handleCheckOpenFile
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
+import com.example.st109_pdf_reader.core.extensions.handleFileSample
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
 import com.example.st109_pdf_reader.core.extensions.select
@@ -29,6 +30,7 @@ import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
 import com.example.st109_pdf_reader.databinding.FragmentBookmarkBinding
 import com.example.st109_pdf_reader.databinding.PopupReaderBinding
+import com.example.st109_pdf_reader.ui.ViewActivity
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
 import com.example.st109_pdf_reader.ui.home.adapter.TypeFileAdapter
@@ -68,7 +70,7 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
             homeActivity.fileViewModel.refreshScan(requireActivity())
             binding.swrType.isRefreshing = false
         }
-
+        binding.layoutSampleFile.setOnSingleClick { homeActivity.handleFileSample(type) }
         handleRcv()
     }
 
@@ -170,9 +172,34 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
 
     private fun checkListSize() {
         if (bookmarkList.isEmpty()) {
-            binding.layoutNoItem.visible()
+            binding.layoutSampleFile.visible()
+            binding.rcvFile.gone()
+            val res = when (type) {
+                KeyApp.ALL_FILE -> {
+                    R.drawable.ic_pdf_reader
+                }
+
+                KeyApp.WORD -> {
+                    R.drawable.ic_word_reader
+                }
+
+                KeyApp.EXCEL -> {
+                    R.drawable.ic_excel_reader
+                }
+
+                KeyApp.PPT -> {
+                    R.drawable.ic_ppt_reader
+                }
+
+                else -> {
+                    R.drawable.ic_pdf_reader
+                }
+
+            }
+            binding.imvType.setImageResource(res)
         } else {
-            binding.layoutNoItem.gone()
+            binding.layoutSampleFile.gone()
+            binding.rcvFile.visible()
         }
     }
 
@@ -188,6 +215,7 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
         val popupWindow = PopupWindow(
             popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
         )
+        popupWindow.setOnDismissListener { homeActivity.hideNavigation() }
         popupWindow.elevation = 10f
 
         when (type) {
@@ -268,10 +296,7 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
                 homeActivity.showToast(getString(R.string.file_not_exist))
             } else {
                 homeActivity.handleDeleteFile(
-                    homeActivity.loadingDialog,
-                    homeActivity.fileViewModel,
-                    path,
-                    onFinish = { status ->
+                    homeActivity.loadingDialog, homeActivity.fileViewModel, path, onFinish = { status ->
                         if (status) {
                             bookmarkList.removeAt(position)
                             bookmarkAdapter.submitList(bookmarkList)
@@ -320,7 +345,7 @@ class BookmarkFragment : BaseFragment<FragmentBookmarkBinding>() {
                         KeyApp.RENAME_SUCCESS -> {
                             bookmarkList[position].name = newName
                             bookmarkAdapter.notifyItemChanged(position)
-                            homeActivity.fileViewModel.refreshScan(homeActivity)
+//                            homeActivity.fileViewModel.refreshScan(homeActivity)
                         }
 
                         else -> {

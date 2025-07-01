@@ -2,9 +2,11 @@ package com.example.st109_pdf_reader.ui.pdf
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.os.Build
+import android.os.Environment
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.util.DisplayMetrics
@@ -39,12 +41,14 @@ import com.artifex.mupdfdemo.SearchTaskResult
 import com.document.allreader.allofficefilereader.fc.hssf.usermodel.HeaderFooter.file
 import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
+import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.copyFileInternalToExternal
 import com.example.st109_pdf_reader.core.extensions.copyFileToExternal
 import com.example.st109_pdf_reader.core.extensions.createBimapFromView
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
+import com.example.st109_pdf_reader.core.extensions.handleComeBackHome
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.invisible
@@ -53,7 +57,11 @@ import com.example.st109_pdf_reader.core.extensions.recognizeTextFromBitmap
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
 import com.example.st109_pdf_reader.core.extensions.shareFile
 import com.example.st109_pdf_reader.core.extensions.showToast
+import com.example.st109_pdf_reader.core.utils.KeyApp.RequestCode.CAMERA_PERMISSION_CODE
+import com.example.st109_pdf_reader.core.utils.KeyApp.RequestCode.STORAGE_PERMISSION_CODE
 import com.example.st109_pdf_reader.core.utils.SystemUtils
+import com.example.st109_pdf_reader.core.utils.SystemUtils.getStoragePermission
+import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
 import com.example.st109_pdf_reader.data.local.AppDatabase
 import com.example.st109_pdf_reader.data.local.repository.FileRepository
 import com.example.st109_pdf_reader.databinding.PopupEditBinding
@@ -100,13 +108,24 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
     private var isDraw = false
     private var isEdit = false
     private var isScan = false
-
+    private var isSampleFile = false
+    private var isSuccess = false
+    private var isNotAccessPermission = false
     override fun setViewBinding(): ActivityPdfBinding {
         return ActivityPdfBinding.inflate(LayoutInflater.from(this))
     }
 
     override fun initView() {
-        initData()
+        val dao = AppDatabase.getInstance(this).fileDao()
+        val repository = FileRepository(dao)
+        fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
+        val getFile = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)
+        file = getFile!!
+        isCreate = intent.getBooleanExtra(KeyApp.KeyIntent.CREATE_KEY, false)
+        isScan = intent.getBooleanExtra(KeyApp.KeyIntent.SCAN_KEY, false)
+        isSampleFile = intent.getBooleanExtra(KeyApp.KeyIntent.SAMPLE_KEY, false)
+        isSuccess = intent.getBooleanExtra(KeyApp.KeyIntent.SUCCESS_KEY, false)
+        checkPermissionToInit()
         binding.btnSpeech.tag = R.drawable.ic_speech_on
     }
 
@@ -134,7 +153,6 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             btnActionBarLeft.visible()
             tvCenter.visible()
             tvCenter.setTextColor(getColor(R.color.white))
-            btnActionBarRight.visible()
             layoutHeader.setBackgroundResource(R.color.pdf)
         }
     }
@@ -143,28 +161,36 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     }
 
-    private fun initData() {
-        val dao = AppDatabase.getInstance(this).fileDao()
-        val repository = FileRepository(dao)
-        fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
-
-        val getFile = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)
-        dLog("getFile: ${getFile}")
-        file = getFile!!
-
-        isCreate = intent.getBooleanExtra(KeyApp.KeyIntent.CREATE_KEY, false)
-        isScan = intent.getBooleanExtra(KeyApp.KeyIntent.SCAN_KEY, false)
-
-        dLog("isCreate: ${isCreate}")
-        if (isCreate) {
-            binding.apply {
-                actionBar.btnActionBarRight.setImageResource(R.drawable.ic_save_create)
-                btnSpeech.gone()
+    private fun checkPermissionToInit() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+            if (!settingsDialog.isShowing) {
+                isNotAccessPermission = false
+                settingsDialog.show()
+            }
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(storagePermission)) {
+            if (!settingsDialog.isShowing) {
+                isNotAccessPermission = false
+                settingsDialog.show()
             }
         } else {
-            binding.apply {
-                actionBar.btnActionBarRight.setImageResource(R.drawable.ic_more_white)
-            }
+            settingsDialog.dismiss()
+            hideNavigation()
+            initData()
+        }
+    }
+
+    private fun initData() {
+        if (isCreate) {
+            binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_save_create)
+            binding.btnSpeech.gone()
+        } else {
+            binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_more_white)
+        }
+        if (isSampleFile) {
+            binding.actionBar.btnActionBarRight.invisible()
+            binding.btnEdit.gone()
+        } else {
+            binding.actionBar.btnActionBarRight.visible()
         }
 
         try {
@@ -180,7 +206,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             createUI()
             core?.canProof()
             textToSpeech = TextToSpeech(this, this)
-
+            isNotAccessPermission = true
         } catch (e: Exception) {
             eLog("initData: ${e.message}")
         }
@@ -290,6 +316,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                 }
                 launch(Dispatchers.Main) {
                     if (job1.await()) {
+                        hideNavigation()
                         recognizeTextFromBitmap(bitmap!!) { text ->
                             dLog("text: $text")
                             binding.btnSpeech.setImageResource(R.drawable.ic_stop_speech)
@@ -358,6 +385,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
                 popupWindow.dismiss()
             }
         }
+        popupWindow.setOnDismissListener { hideNavigation() }
 
         val location = IntArray(2)
         view.getLocationOnScreen(location)
@@ -422,7 +450,11 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
             }
 
             else -> {
-                handleBackLeftToRight()
+                if (!isSuccess) {
+                    handleBackLeftToRight()
+                } else {
+                    handleComeBackHome(this)
+                }
             }
         }
     }
@@ -765,7 +797,7 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
         popupBinding.btnDelete.setOnSingleClick {
             handleDelete(popupWindow)
         }
-
+        popupWindow.setOnDismissListener { hideNavigation() }
         val xOffset = dpToPx(-100)
         val yOffset = dpToPx(6)
 
@@ -896,7 +928,12 @@ class PdfActivity : BaseActivity<ActivityPdfBinding>(), FilePicker.FilePickerSup
 
     override fun onRestart() {
         super.onRestart()
-        binding.actionBar.tvCenter.text = file.name
-        resumeTTS()
+        if (isNotAccessPermission) {
+            binding.actionBar.tvCenter.text = file.name
+            resumeTTS()
+        } else {
+            checkPermissionToInit()
+        }
     }
+
 }

@@ -15,10 +15,12 @@ import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseFragment
 import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
+import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.handleCheckOpenFile
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
+import com.example.st109_pdf_reader.core.extensions.handleFileSample
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
 import com.example.st109_pdf_reader.core.extensions.select
@@ -33,6 +35,7 @@ import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.HomeAllFileModel
 import com.example.st109_pdf_reader.databinding.FragmentSavedBinding
 import com.example.st109_pdf_reader.databinding.PopupReaderBinding
+import com.example.st109_pdf_reader.ui.ViewActivity
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
 import com.example.st109_pdf_reader.ui.home.adapter.TypeFileAdapter
@@ -67,6 +70,7 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
             homeActivity.fileViewModel.refreshScan(requireActivity())
             binding.swrType.isRefreshing = false
         }
+        binding.layoutSampleFile.setOnSingleClick { homeActivity.handleFileSample(KeyApp.PDF) }
         handleRcv()
     }
 
@@ -134,9 +138,12 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
 
     private fun checkListSize() {
         if (savedList.isEmpty()) {
-            binding.layoutNoItem.visible()
+            binding.layoutSampleFile.visible()
+            binding.rcvFile.gone()
+            binding.imvType.setImageResource(R.drawable.ic_pdf_reader)
         } else {
-            binding.layoutNoItem.gone()
+            binding.layoutSampleFile.gone()
+            binding.rcvFile.visible()
         }
     }
 
@@ -145,8 +152,9 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
         val popupWindow = PopupWindow(
             popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
         )
+        popupWindow.setOnDismissListener { homeActivity.hideNavigation() }
         popupWindow.elevation = 10f
-
+        popupWindow.setOnDismissListener { homeActivity.hideNavigation() }
         popupBinding.tvOpenFile.select()
         popupBinding.tvRename.select()
         popupBinding.tvShare.select()
@@ -249,7 +257,7 @@ class SavedFragment : BaseFragment<FragmentSavedBinding>() {
                         KeyApp.RENAME_SUCCESS -> {
                             savedList[position].name = newName
                             savedAdapter.notifyItemChanged(position)
-                            homeActivity.fileViewModel.refreshScan(homeActivity)
+//                            homeActivity.fileViewModel.refreshScan(homeActivity)
                         }
 
                         else -> {

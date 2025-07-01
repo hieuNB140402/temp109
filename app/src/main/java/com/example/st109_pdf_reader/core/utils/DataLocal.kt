@@ -7,11 +7,13 @@ import android.provider.MediaStore
 import com.example.st109_pdf_reader.data.model.IntroModel
 import com.example.st109_pdf_reader.data.model.LanguageModel
 import com.example.st109_pdf_reader.R
+import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.model.create.AllImageModel
 import com.example.st109_pdf_reader.data.model.create.FilterModel
 import com.example.st109_pdf_reader.data.model.create.ImageModel
 import java.io.File
 import kotlin.collections.first
+import kotlin.random.Random
 
 object DataLocal {
     fun getLanguageList(): ArrayList<LanguageModel> {
@@ -29,7 +31,8 @@ object DataLocal {
     val itemIntroList = listOf(
         IntroModel(R.drawable.img_intro_1, R.string.title_1),
         IntroModel(R.drawable.img_intro_2, R.string.title_2),
-        IntroModel(R.drawable.img_intro_3, R.string.title_3))
+        IntroModel(R.drawable.img_intro_3, R.string.title_3)
+    )
 
     val imageBottomNotSelectedList = arrayListOf(
         R.drawable.ic_home,
@@ -121,5 +124,7 @@ object DataLocal {
         }
         return dataAllImage
     }
+
+
 }
 

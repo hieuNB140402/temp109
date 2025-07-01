@@ -84,7 +84,7 @@
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.home.fragment.ViewActivity"
+            android:name=".ui.ViewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity

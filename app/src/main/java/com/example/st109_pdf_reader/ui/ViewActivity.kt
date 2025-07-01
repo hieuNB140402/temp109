@@ -1,6 +1,5 @@
-package com.example.st109_pdf_reader.ui.home.fragment
+package com.example.st109_pdf_reader.ui
 
-import android.R.attr.path
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -8,7 +7,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
-import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.LayoutInflater
@@ -26,7 +24,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.document.allreader.allofficefilereader.common.IOfficeToPicture
 import com.document.allreader.allofficefilereader.constant.EventConstant
-import com.document.allreader.allofficefilereader.fc.hssf.usermodel.HeaderFooter.file
 import com.document.allreader.allofficefilereader.officereader.AppFrame
 import com.document.allreader.allofficefilereader.officereader.beans.AImageButton
 import com.document.allreader.allofficefilereader.officereader.beans.AImageCheckButton
@@ -40,13 +37,11 @@ import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
 import com.example.st109_pdf_reader.core.dialog.RenameDialog
 import com.example.st109_pdf_reader.core.extensions.checkPermissions
 import com.example.st109_pdf_reader.core.extensions.dpToPx
-import com.example.st109_pdf_reader.core.extensions.goToManageSettings
-import com.example.st109_pdf_reader.core.extensions.goToSettings
 import com.example.st109_pdf_reader.core.extensions.gone
-import com.example.st109_pdf_reader.core.extensions.handleBackLeftToRight
 import com.example.st109_pdf_reader.core.extensions.handleBackLeftToRight
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
+import com.example.st109_pdf_reader.core.extensions.invisible
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
 import com.example.st109_pdf_reader.core.extensions.select
 import com.example.st109_pdf_reader.core.extensions.setOnSingleClick
@@ -55,19 +50,16 @@ import com.example.st109_pdf_reader.core.extensions.showToast
 import com.example.st109_pdf_reader.core.extensions.visible
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.SystemUtils
-import com.example.st109_pdf_reader.core.utils.SystemUtils.storagePermission
 import com.example.st109_pdf_reader.data.local.AppDatabase
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.data.local.repository.FileRepository
 import com.example.st109_pdf_reader.databinding.ActivityViewBinding
-
 import com.example.st109_pdf_reader.databinding.PopupReaderBinding
-import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModel
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModelFactory
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
-import kotlin.text.get
 
 class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
     private var control: MainControl? = null
@@ -88,37 +80,50 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
     private var f268bg: Any = -7829368
     private lateinit var file: FilesModel
     lateinit var fileViewModel: FileViewModel
+    private var isSampleFile = false
+    private var isNotAccessPermission = false
+
     override fun setViewBinding(): ActivityViewBinding {
         return ActivityViewBinding.inflate(LayoutInflater.from(this))
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun initView() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                intent.data = ("package:$packageName").toUri()
-                startActivity(intent)
-            } else {
-                initData()
+        val dao = AppDatabase.Companion.getInstance(this).fileDao()
+        val repository = FileRepository(dao)
+        fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
+        val file = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)
+        this.file = file!!
+        isSampleFile = intent.getBooleanExtra(KeyApp.KeyIntent.SAMPLE_KEY, false)
+
+        checkPermissionToInit()
+    }
+
+    private fun checkPermissionToInit() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+            if (!settingsDialog.isShowing) {
+                isNotAccessPermission = false
+                settingsDialog.show()
+            }
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(SystemUtils.storagePermission)) {
+            if (!settingsDialog.isShowing) {
+                isNotAccessPermission = false
+                settingsDialog.show()
             }
         } else {
-            if (checkPermissions(storagePermission)) {
-                initData()
-            } else {
-                goToSettings()
-            }
+            settingsDialog.dismiss()
+            hideNavigation()
+            initData()
         }
     }
 
     private fun initData() {
-        val dao = AppDatabase.getInstance(this).fileDao()
-        val repository = FileRepository(dao)
-
-        fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
-
-        val file = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)
-        this.file = file!!
+        if (!isSampleFile) {
+            binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_more_white)
+            binding.actionBar.btnActionBarRight.visible()
+        } else {
+            binding.actionBar.btnActionBarRight.invisible()
+        }
 
         changeHeader(file.type)
         control = MainControl(this)
@@ -197,8 +202,7 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
             tvCenter.visible()
             tvCenter.setTextColor(getColor(com.document.allreader.allofficefilereader.R.color.white))
             tvCenter.select()
-            btnActionBarRight.setImageResource(R.drawable.ic_more_white)
-            btnActionBarRight.visible()
+
         }
     }
 
@@ -564,7 +568,10 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
 
     override fun onResume() {
         super.onResume()
-        hideNavigation()
+        lifecycleScope.launch {
+            delay(300)
+            hideNavigation()
+        }
     }
 
     private fun handlePopUp(view: View) {
@@ -572,6 +579,7 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
         val popupWindow = PopupWindow(
             popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
         )
+        popupWindow.setOnDismissListener { hideNavigation() }
         popupWindow.elevation = 10f
         popupBinding.btnOpenFile.gone()
         when (file.type) {
@@ -689,8 +697,7 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
             renameFileByPath(
-                this,
-                loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
+                this, loadingDialog, fileViewModel, file.path, newNameWithExtension, onFinish = { status ->
                     when (status) {
                         KeyApp.FILE_NOT_EXIST -> {
                             showToast(getString(R.string.file_not_exist))
@@ -744,6 +751,13 @@ class ViewActivity : BaseActivity<ActivityViewBinding>(), IMainFrame {
                 })
             }
 
+        }
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        if (!isNotAccessPermission) {
+            checkPermissionToInit()
         }
     }
 }

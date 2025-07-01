@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.document.allreader.allofficefilereader.fc.hssf.usermodel.HeaderFooter.file
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.base.BaseFragment
 import com.example.st109_pdf_reader.core.dialog.ConfirmDialog
@@ -23,6 +24,7 @@ import com.example.st109_pdf_reader.core.extensions.dpToPx
 import com.example.st109_pdf_reader.core.extensions.gone
 import com.example.st109_pdf_reader.core.extensions.handleCheckOpenFile
 import com.example.st109_pdf_reader.core.extensions.handleDeleteFile
+import com.example.st109_pdf_reader.core.extensions.handleFileSample
 import com.example.st109_pdf_reader.core.extensions.hideNavigation
 import com.example.st109_pdf_reader.core.extensions.renameFileByPath
 import com.example.st109_pdf_reader.core.extensions.select
@@ -34,15 +36,18 @@ import com.example.st109_pdf_reader.core.extensions.sortByDateOldToNew
 import com.example.st109_pdf_reader.core.extensions.sortByNameAZ
 import com.example.st109_pdf_reader.core.extensions.sortByNameZA
 import com.example.st109_pdf_reader.core.extensions.visible
+import com.example.st109_pdf_reader.core.utils.DataLocal
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.databinding.FragmentReaderBinding
 import com.example.st109_pdf_reader.databinding.PopupReaderBinding
+import com.example.st109_pdf_reader.ui.ViewActivity
 import com.example.st109_pdf_reader.ui.home.HomeActivity
 import com.example.st109_pdf_reader.ui.home.adapter.ReaderAdapter
 import com.example.st109_pdf_reader.ui.pdf.PdfActivity
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.io.File
@@ -100,6 +105,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             layoutActionBar.setOnSingleClick { resetLongClick() }
             btnShare.setOnSingleClick { handleShare() }
             btnDelete.setOnSingleClick { handleDelete() }
+            layoutSampleFile.setOnSingleClick { homeActivity.handleFileSample(type) }
         }
 
         handleSort()
@@ -245,9 +251,35 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     private fun submitAdapter() {
         adapter.submitList(fileList)
         if (fileList.isEmpty()) {
-            binding.layoutNoItem.visible()
+            binding.layoutSampleFile.visible()
+            binding.rcvFile.gone()
+            val res = when (type) {
+                KeyApp.ALL_FILE -> {
+                    R.drawable.ic_pdf_reader
+                }
+
+                KeyApp.WORD -> {
+                    R.drawable.ic_word_reader
+                }
+
+                KeyApp.EXCEL -> {
+                    R.drawable.ic_excel_reader
+                }
+
+                KeyApp.PPT -> {
+                    R.drawable.ic_ppt_reader
+                }
+
+                else -> {
+                    R.drawable.ic_pdf_reader
+                }
+
+            }
+            binding.imvType.setImageResource(res)
+
         } else {
-            binding.layoutNoItem.gone()
+            binding.layoutSampleFile.gone()
+            binding.rcvFile.visible()
         }
     }
 
@@ -414,7 +446,27 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         }
         submitAdapter()
         binding.actionBar.btnActionBarRight.setImageResource(R.drawable.ic_sort)
-        binding.actionBar.tvCenter.text = getString(R.string.pdf_reader)
+        when (type) {
+            KeyApp.ALL_FILE -> {
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.all_file)
+            }
+
+            KeyApp.WORD -> {
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Word")
+            }
+
+            KeyApp.EXCEL -> {
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Excel")
+            }
+
+            KeyApp.PPT -> {
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "Powerpoint")
+            }
+
+            KeyApp.PDF -> {
+                binding.actionBar.tvCenter.text = homeActivity.getString(R.string.type_reader, "PDF")
+            }
+        }
         binding.layoutBottom.gone()
         isTypeSort = true
     }
@@ -434,47 +486,52 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     }
 
     private fun handleDelete() {
-        val confirmDialog = ConfirmDialog(
-            requireActivity(), R.string.delete, R.string.do_you_want_to_delete_this_file
-        )
-        SystemUtils.setLocale(requireActivity())
-        confirmDialog.show()
-        confirmDialog.onNoClick = {
-            confirmDialog.dismiss()
-            homeActivity.hideNavigation()
-        }
-        confirmDialog.onYesClick = {
-            confirmDialog.dismiss()
-            val deleteList = ArrayList<String>()
-            fileList.forEach {
-                if (it.isSelected) {
-                    deleteList.add(it.path)
+        if (fileList.any{it.isSelected}){
+            val confirmDialog = ConfirmDialog(
+                requireActivity(), R.string.delete, R.string.do_you_want_to_delete_this_file
+            )
+            SystemUtils.setLocale(requireActivity())
+            confirmDialog.show()
+            confirmDialog.onNoClick = {
+                confirmDialog.dismiss()
+                homeActivity.hideNavigation()
+            }
+            confirmDialog.onYesClick = {
+                confirmDialog.dismiss()
+                val deleteList = ArrayList<String>()
+                fileList.forEach {
+                    if (it.isSelected) {
+                        deleteList.add(it.path)
+                    }
                 }
-            }
-            if (deleteList.isEmpty()) {
-                homeActivity.showToast(getString(R.string.please_choose_a_file))
+                if (deleteList.isEmpty()) {
+                    homeActivity.showToast(getString(R.string.please_choose_a_file))
 
-            } else {
-                homeActivity.handleDeleteFile(
-                    homeActivity.loadingDialog, homeActivity.fileViewModel, deleteList, onFinish = { status ->
-                        if (status) {
-                            val updatedList = fileList.filterNot { file ->
-                                deleteList.contains(file.path)
+                } else {
+                    homeActivity.handleDeleteFile(
+                        homeActivity.loadingDialog, homeActivity.fileViewModel, deleteList, onFinish = { status ->
+                            if (status) {
+                                val updatedList = fileList.filterNot { file ->
+                                    deleteList.contains(file.path)
+                                }
+                                fileList.clear()
+                                fileList.addAll(updatedList)
+                                submitAdapter()
+
+                            } else {
+                                homeActivity.showToast(getString(R.string.file_not_exist))
                             }
-                            fileList.clear()
-                            fileList.addAll(updatedList)
-                            submitAdapter()
+                            lifecycleScope.launch {
+                                homeActivity.dismissLoading()
+                            }
+                        })
+                }
 
-                        } else {
-                            homeActivity.showToast(getString(R.string.file_not_exist))
-                        }
-                        lifecycleScope.launch {
-                            homeActivity.dismissLoading()
-                        }
-                    })
             }
-
+        }else{
+            homeActivity.showToast(R.string.please_choose_a_file)
         }
+
 
     }
 
@@ -483,6 +540,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
         val popupWindow = PopupWindow(
             popupBinding.root, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true
         )
+        popupWindow.setOnDismissListener { homeActivity.hideNavigation() }
         popupWindow.elevation = 10f
 
         when (type) {
@@ -597,7 +655,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             val extensionArray = file.path.split(".")
             val extension = extensionArray[extensionArray.size - 1]
             val newNameWithExtension = "${newName}.${extension}"
-            homeActivity.dLog("newNameWithExtension: ${newNameWithExtension}")
+
             renameFileByPath(
                 homeActivity,
                 homeActivity.loadingDialog,
@@ -617,7 +675,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
                         KeyApp.RENAME_SUCCESS -> {
                             fileList[position].name = newName
                             submitAdapter()
-                            homeActivity.fileViewModel.refreshScan(homeActivity)
+//                            homeActivity.fileViewModel.refreshScan(homeActivity)
                         }
 
                         else -> {
@@ -633,6 +691,7 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
     }
 
     private fun handleClickItem(file: FilesModel) {
+        resetLongClick()
         homeActivity.handleCheckOpenFile(file) { status ->
             if (status == StatusOpenFile.FileExist) {
                 val intent = if (file.type != KeyApp.PDF) {
@@ -646,4 +705,15 @@ class ReaderFragment : BaseFragment<FragmentReaderBinding>() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        resetLongClick()
+        lifecycleScope.launch {
+            delay(300)
+            homeActivity.hideNavigation()
+        }
+    }
+
+
 }

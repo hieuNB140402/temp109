@@ -4,6 +4,7 @@ object KeyApp {
     const val DOWNLOAD_ALBUM = "TakePhoto"
     const val TEMP_IMAGE_FILTER = "Image Background"
     const val FOLDER_CREATE_PDF = "My PDF"
+    const val SAMPLE_FOLDER = "Sample File"
 
 
     const val ALL_FILE = "ALL"
@@ -31,6 +32,8 @@ object KeyApp {
         const val FROM_SETTINGS = "FROM_SETTINGS"
         const val CREATE_KEY = "CREATE_KEY"
         const val SCAN_KEY = "SCAN_KEY"
+        const val SAMPLE_KEY = "SAMPLE_KEY"
+        const val SUCCESS_KEY = "SUCCESS_KEY"
     }
 
     object KeySharePreference {

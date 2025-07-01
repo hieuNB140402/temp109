@@ -540,3 +540,40 @@ fun createPdfFromTextInternal(context: Context, text: String): FilesModel {
     )
 
 }
+fun copySampleFilesToInternal(context: Context) {
+    val assetFiles = listOf(
+        "Sample.docx",
+        "Sample.xlsx",
+        "Sample.pptx",
+        "Sample.pdf"
+    )
+
+    val assetManager = context.assets
+    val internalDir = File(context.filesDir, KeyApp.SAMPLE_FOLDER)
+
+    // Tạo folder nếu chưa có
+    if (!internalDir.exists()) {
+        internalDir.mkdirs()
+    }
+
+    for (fileName in assetFiles) {
+        try {
+            val inputStream = assetManager.open(fileName)
+            val outFile = File(internalDir, fileName)
+
+            if (!outFile.exists()) {
+                val outputStream = FileOutputStream(outFile)
+                inputStream.copyTo(outputStream)
+                outputStream.flush()
+                outputStream.close()
+                inputStream.close()
+                Log.d("nbhieu", "Copied $fileName to ${outFile.absolutePath}")
+            } else {
+                Log.d("nbhieu", "$fileName already exists in ${outFile.absolutePath}")
+            }
+
+        } catch (e: IOException) {
+            Log.e("nbhieu", "Failed to copy $fileName: ${e.message}", e)
+        }
+    }
+}

@@ -1,6 +1,7 @@
 package com.example.st109_pdf_reader.core.extensions
 
 import android.R.attr.path
+import android.R.attr.type
 import android.app.Activity
 import android.app.Fragment
 import android.content.Context
@@ -16,6 +17,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
@@ -23,13 +25,16 @@ import com.document.allreader.allofficefilereader.fc.hssf.usermodel.HeaderFooter
 import com.document.allreader.allofficefilereader.utils.FileUtils.context
 import com.example.st109_pdf_reader.R
 import com.example.st109_pdf_reader.core.dialog.LoadingDialog
+import com.example.st109_pdf_reader.core.utils.DataLocal
 import com.example.st109_pdf_reader.core.utils.KeyApp
 import com.example.st109_pdf_reader.core.utils.StatusOpenFile
 import com.example.st109_pdf_reader.core.utils.SystemUtils
 import com.example.st109_pdf_reader.core.utils.SystemUtils.lastClickTime
 import com.example.st109_pdf_reader.data.local.entity.FilesModel
 import com.example.st109_pdf_reader.ui.home.HomeActivity
+import com.example.st109_pdf_reader.ui.ViewActivity
 import com.example.st109_pdf_reader.ui.home.viewmodel.FileViewModel
+import com.example.st109_pdf_reader.ui.pdf.PdfActivity
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -492,4 +497,49 @@ fun Activity.handleCheckOpenFile(file: FilesModel, onAction: ((StatusOpenFile) -
         showToast(getString(R.string.file_does_not_exist_please_refresh_data))
         onAction.invoke(StatusOpenFile.FileNotExist)
     }
+}
+
+fun Activity.handleFileSample(typeInput: String) {
+    val type = if (typeInput == KeyApp.ALL_FILE) {
+        KeyApp.PDF
+    } else {
+        typeInput
+    }
+    val intent = if (type != KeyApp.PDF) {
+        Intent(this, ViewActivity::class.java)
+    } else {
+        Intent(this, PdfActivity::class.java)
+    }
+    val extension = when (type) {
+        KeyApp.WORD -> {
+            "docx"
+        }
+
+        KeyApp.EXCEL -> {
+            "xlsx"
+        }
+
+        KeyApp.PPT -> {
+            "pptx"
+        }
+
+        else -> {
+            "pdf"
+        }
+    }
+    val file = FilesModel(0, type, "Sample", listFilesInSampleFolder(this, extension))
+    intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+    intent.putExtra(KeyApp.KeyIntent.SAMPLE_KEY, true)
+    startActivity(intent)
+}
+
+fun listFilesInSampleFolder(context: Context, type: String): String {
+    val folder = File(context.filesDir, KeyApp.SAMPLE_FOLDER)
+
+    if (folder.exists() && folder.isDirectory) {
+        val files = folder.listFiles()!!.toCollection(ArrayList())
+        val docxFiles = files.filter { it.extension == type }
+        return docxFiles.first().absolutePath
+    }
+    return ""
 }

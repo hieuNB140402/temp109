@@ -116,6 +116,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         }
 
         homeActivity.isFragmentOther = true
+        homeActivity.hideNavigation()
     }
 
     override fun dataObservable() {
@@ -203,6 +204,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 popupWindow.dismiss()
             }
         }
+        popupWindow.setOnDismissListener { homeActivity.hideNavigation() }
 
         val location = IntArray(2)
         view.getLocationOnScreen(location)

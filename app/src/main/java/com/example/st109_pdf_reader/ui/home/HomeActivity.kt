@@ -22,6 +22,7 @@ import com.example.st109_pdf_reader.core.dialog.RateDialog
 import com.example.st109_pdf_reader.core.extensions.animateLift
 import com.example.st109_pdf_reader.core.extensions.backFragmentSlideInFromLeft
 import com.example.st109_pdf_reader.core.extensions.checkPermissions
+import com.example.st109_pdf_reader.core.extensions.copySampleFilesToInternal
 import com.example.st109_pdf_reader.core.extensions.dLog
 import com.example.st109_pdf_reader.core.extensions.deleteTempDataFolder
 import com.example.st109_pdf_reader.core.extensions.getImageInternal
@@ -71,7 +72,6 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
     private var textGradientBottomList = ArrayList<TextView>()
     private var currentFragment = KeyApp.ValueApp.HOME
     lateinit var fileViewModel: FileViewModel
-    private var isLoadFileSuccess = false
     var fileList = MutableLiveData<ArrayList<FilesModel>>()
     var isFragmentOther = false
 
@@ -83,9 +83,14 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         initList()
         initRate()
         countAccess()
+        val dao = AppDatabase.getInstance(this).fileDao()
+        val repository = FileRepository(dao)
+        fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
+        setupViewPager()
         deleteTempDataFolder(this, KeyApp.TEMP_IMAGE_FILTER)
         deleteTempDataFolder(this, KeyApp.DOWNLOAD_ALBUM)
         deleteTempDataFolder(this, KeyApp.FOLDER_CREATE_PDF)
+        copySampleFilesToInternal(this)
         checkPermissionToInit()
     }
 
@@ -94,28 +99,23 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             if (!settingsDialog.isShowing) {
                 settingsDialog.show()
             }
-        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(
-                storagePermission
-            )
-        ) {
+        } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R && !checkPermissions(storagePermission)) {
             if (!settingsDialog.isShowing) {
                 settingsDialog.show()
             }
         } else {
-            setupViewPager()
-            val dao = AppDatabase.getInstance(this).fileDao()
-            val repository = FileRepository(dao)
+            settingsDialog.dismiss()
+            hideNavigation()
+            initData()
+        }
+    }
 
-            fileViewModel = ViewModelProvider(this, FileViewModelFactory(repository))[FileViewModel::class.java]
-            fileViewModel.scanIfFirstTime(this)
-
-            lifecycleScope.launch {
-                fileViewModel.filesFlow.collectLatest {
-                    fileList.postValue(it.toCollection(ArrayList<FilesModel>()))
-                }
+    private fun initData() {
+        fileViewModel.scanIfFirstTime(this)
+        lifecycleScope.launch {
+            fileViewModel.filesFlow.collectLatest {
+                fileList.postValue(it.toCollection(ArrayList<FilesModel>()))
             }
-
-            isLoadFileSuccess = true
         }
     }
 
@@ -200,7 +200,6 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
             vpgHome.adapter = HomeAdapter(this@HomeActivity)
             vpgHome.setCurrentItem(currentFragment, false)
             handleSelectBottom(currentFragment)
-
 
             vpgHome.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
@@ -316,14 +315,7 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
 
     override fun onRestart() {
         super.onRestart()
-        if (!isLoadFileSuccess) {
-            checkPermissionToInit()
-        }
-    }
-
-    override fun dataObservable() {
-        super.dataObservable()
-
+        checkPermissionToInit()
     }
 
     private fun handleSearch() {
@@ -343,15 +335,15 @@ class HomeActivity : BaseActivity<ActivityHomeBinding>() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                startIntentFromLeft(GalleryActivity::class.java)
+                SystemUtils.setStoragePermission(this, 0)
             } else {
                 SystemUtils.setStoragePermission(this, (getStoragePermission(this) + 1))
             }
         } else if (requestCode == CAMERA_PERMISSION_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                setCameraPermission(this, 0)
+                SystemUtils.setCameraPermission(this, 0)
             } else {
-                setCameraPermission(this, (SystemUtils.getCameraPermission(this) + 1))
+                SystemUtils.setCameraPermission(this, (SystemUtils.getCameraPermission(this) + 1))
             }
         }
     }

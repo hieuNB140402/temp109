@@ -73,7 +73,7 @@ class SuccessfulActivity : BaseActivity<ActivitySuccessfulBinding>() {
         }
     }
 
-    private fun initData(){
+    private fun initData() {
         file = intent.getParcelableExtra<FilesModel>(KeyApp.KeyIntent.INTENT_KEY)!!
         val bit = renderFirstPageFromPdf(file.path)
         Glide.with(this).load(bit).into(binding.imvImage)
@@ -81,6 +81,7 @@ class SuccessfulActivity : BaseActivity<ActivitySuccessfulBinding>() {
         binding.tvName.text = name
         binding.tvPath.text = getString(R.string.path_success, file.path)
     }
+
     fun renderFirstPageFromPdf(filePath: String): Bitmap? {
         val file = File(filePath)
         val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
@@ -96,10 +97,11 @@ class SuccessfulActivity : BaseActivity<ActivitySuccessfulBinding>() {
         return bitmap
     }
 
-    private fun handleView(){
+    private fun handleView() {
         val intent = Intent(this, PdfActivity::class.java)
         fileViewModel.updateRecentFile(file.id, true)
         intent.putExtra(KeyApp.KeyIntent.INTENT_KEY, file)
+        intent.putExtra(KeyApp.KeyIntent.SUCCESS_KEY, true)
         startActivity(intent)
     }
 
